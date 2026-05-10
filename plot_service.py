@@ -13,12 +13,16 @@ COLOR_DIR_TEST = "#9333ea"
 COLOR_MUTED = "#6b7280"
 
 
+def with_stock_title(title, stock_label=None):
+    return f"{stock_label} - {title}" if stock_label else title
+
+
 def setup_matplotlib():
     matplotlib.rcParams["font.sans-serif"] = ["SimHei"]
     matplotlib.rcParams["axes.unicode_minus"] = False
 
 
-def plot_loss_curves(reg_loss_history, reg_test_loss_history, dir_loss_history, dir_test_loss_history, epochs):
+def plot_loss_curves(reg_loss_history, reg_test_loss_history, dir_loss_history, dir_test_loss_history, epochs, stock_label=None):
     epochs_axis = np.arange(1, epochs + 1)
     plt.figure(figsize=(12, 6))
 
@@ -31,7 +35,7 @@ def plot_loss_curves(reg_loss_history, reg_test_loss_history, dir_loss_history, 
         color=COLOR_REG_TEST,
         linestyle="--",
     )
-    plt.title("训练集 / 测试集 Loss 曲线")
+    plt.title(with_stock_title("训练集 / 测试集 Loss 曲线", stock_label))
     plt.ylabel("MSE Loss")
     plt.legend()
     plt.grid(True, linestyle="--", alpha=0.5)
@@ -54,7 +58,7 @@ def plot_loss_curves(reg_loss_history, reg_test_loss_history, dir_loss_history, 
     plt.show()
 
 
-def plot_roc_curve(dir_reals, probabilities):
+def plot_roc_curve(dir_reals, probabilities, stock_label=None):
     plt.figure(figsize=(8, 6))
     if len(np.unique(dir_reals)) >= 2:
         fpr, tpr, _ = roc_curve(dir_reals, probabilities)
@@ -79,7 +83,7 @@ def plot_roc_curve(dir_reals, probabilities):
         plt.xlabel("假阳性率 FPR")
         plt.ylabel("真正率 TPR")
 
-    plt.title("涨跌方向分类 ROC 曲线")
+    plt.title(with_stock_title("涨跌方向分类 ROC 曲线", stock_label))
     plt.grid(True, linestyle="--", alpha=0.5)
     plt.tight_layout()
     plt.show()
@@ -94,6 +98,7 @@ def plot_prediction_and_backtest(
     cumulative_return,
     buy_hold,
     max_dd_idx,
+    stock_label=None,
 ):
     plt.figure(figsize=(14, 8))
 
@@ -117,7 +122,7 @@ def plot_prediction_and_backtest(
     plt.scatter(dates.iloc[buy_idx], real_price[buy_idx], marker="^", label="买入", s=50)
     plt.scatter(dates.iloc[sell_idx], real_price[sell_idx], marker="v", label="卖出", s=50)
 
-    plt.title("收盘价预测与交易信号")
+    plt.title(with_stock_title("收盘价预测与交易信号", stock_label))
     plt.ylabel("价格（元）")
     plt.legend()
     plt.grid(True, linestyle="--", alpha=0.5)
@@ -135,7 +140,7 @@ def plot_prediction_and_backtest(
             label="最大回撤点",
         )
 
-    plt.title("策略累计收益与最大回撤")
+    plt.title(with_stock_title("策略累计收益与最大回撤", stock_label))
     plt.xlabel("时间")
     plt.ylabel("累计收益率")
     plt.legend()

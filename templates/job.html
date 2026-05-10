@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>任务 {{ jobid }}</title>
+    <title>任务 {{ jobid }}{% if stock_label %} - {{ stock_label }}{% endif %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
       body { background: #f8fafc; }
@@ -29,8 +29,8 @@
     <div class="container py-4">
       <a href="/" class="btn btn-link">&larr; 返回首页</a>
       <div class="card p-3">
-        <h4>任务 <span class="text-primary">{{ jobid }}</span></h4>
-        <p class="small-muted">状态： <strong id="status">{{ status }}</strong></p>
+        <h4>{{ stock_label|default(jobid, true) }}</h4>
+        <p class="small-muted">任务：<code>{{ jobid }}</code>　状态： <strong id="status">{{ status }}</strong></p>
 
         <div id="progressArea">
           {% if status == 'running' %}

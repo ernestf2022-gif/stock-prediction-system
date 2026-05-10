@@ -6,6 +6,7 @@ from config import APP_VERSION, CSV_DIR, END_DATE, EXCEL_DIR, RESULT_DIR, START_
 from job_service import (
     clear_all_jobs_and_files,
     create_job,
+    delete_job,
     get_job_page_context,
     get_job_status,
     get_latest_finished_summary,
@@ -18,16 +19,24 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
 def index():
-    latest_metrics, latest_duration, latest_images = get_latest_finished_summary()
+    (
+        latest_metrics,
+        latest_duration,
+        latest_images,
+        latest_stock_label,
+        latest_images_stock_label,
+    ) = get_latest_finished_summary()
     return render_template(
         "index.html",
         default_code=STOCK_CODE,
         default_start=START_DATE,
         default_end=END_DATE,
-        jobs=list_recent_jobs(),
+        jobs=list_recent_jobs(limit=50),
         latest_metrics=latest_metrics,
         latest_duration=latest_duration,
         latest_images=latest_images,
+        latest_stock_label=latest_stock_label,
+        latest_images_stock_label=latest_images_stock_label,
         app_version=APP_VERSION,
     )
 
@@ -99,6 +108,13 @@ def download_excel(fname):
 def clear_all():
     clear_all_jobs_and_files()
     return jsonify({"message": "已清空所有任务和文件"}), 200
+
+
+@app.route("/delete_job/<jobid>", methods=["POST"])
+def delete_job_route(jobid):
+    if not delete_job(jobid):
+        return jsonify({"message": "任务不存在或已删除"}), 404
+    return jsonify({"message": "已删除任务"}), 200
 
 
 if __name__ == "__main__":

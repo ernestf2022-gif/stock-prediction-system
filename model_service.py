@@ -27,7 +27,7 @@ from config import (
     TIME_STEP,
     TRANSACTION_FEE,
 )
-from data_service import prepare_stock_dataset
+from data_service import format_stock_label, prepare_stock_dataset, resolve_stock_name
 from plot_service import plot_loss_curves, plot_prediction_and_backtest, plot_roc_curve, setup_matplotlib
 
 
@@ -318,8 +318,10 @@ def predict_future_prices(model, scaled_df, scaler, pandas_df, features=FEATURES
     return future_dates, future_prices
 
 
-def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE):
+def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE, stock_name=None):
     """股票数据爬取 + LSTM预测 + 回测 + 可视化完整流程。"""
+    stock_name = stock_name or resolve_stock_name(stock_code, allow_remote=False)
+    stock_label = format_stock_label(stock_code, stock_name)
     lstm_df, _, _ = prepare_stock_dataset(stock_code, start_date, end_date)
 
     setup_matplotlib()
@@ -364,7 +366,7 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
     )
     print(f"数据截止日期: {pandas_df['交易日期'].max()}")
     print(
-        f"{stock_code} 总收益率: {backtest.total_return:.4f}, "
+        f"{stock_label} 总收益率: {backtest.total_return:.4f}, "
         f"最大回撤: {backtest.max_drawdown:.4f}, 年化夏普: {backtest.sharpe:.4f}"
     )
 
@@ -382,8 +384,9 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
         trained["dir_loss_history"],
         trained["dir_test_loss_history"],
         EPOCHS,
+        stock_label=stock_label,
     )
-    plot_roc_curve(dir_reals, probabilities)
+    plot_roc_curve(dir_reals, probabilities, stock_label=stock_label)
     plot_prediction_and_backtest(
         backtest.dates,
         backtest.real_price,
@@ -393,6 +396,7 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
         backtest.cumulative_return,
         backtest.buy_hold,
         backtest.max_dd_idx,
+        stock_label=stock_label,
     )
 
     return backtest.trade_cycles

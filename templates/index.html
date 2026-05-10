@@ -14,6 +14,14 @@
       footer { margin-top:30px; color:#9ca3af; font-size:0.9rem; }
       .metric { font-size:1.35rem; font-weight:700; }
       .metric-sub { color:#6b7280; font-size:0.9rem; }
+      .recent-jobs-scroll {
+        max-height: 430px;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+      .recent-jobs-scroll .list-group-item {
+        gap: 12px;
+      }
       .img-thumb {
         width: 100% !important;
         max-width: 100% !important;
@@ -99,13 +107,14 @@
         <div class="col-lg-7 mb-3">
           <div class="card p-3 mb-3">
             <h5>最近任务</h5>
-            <div id="jobsList">
+            <div id="jobsList" class="recent-jobs-scroll">
               {% if jobs %}
                 <ul class="list-group">
                   {% for jobid, meta in jobs.items()|reverse %}
                     <li class="list-group-item d-flex justify-content-between align-items-start">
                       <div>
-                        <div><strong>{{ jobid }}</strong> <span class="small-muted">({{ meta.status }})</span></div>
+                        <div><strong>{{ meta.stock_label|default(jobid, true) }}</strong> <span class="small-muted">({{ meta.status }})</span></div>
+                        <div class="small-muted">任务：{{ jobid }}</div>
                         <div class="small-muted">提交：{{ meta.created_at_human }}</div>
                       </div>
                       <div class="d-flex gap-2 flex-wrap justify-content-end">
@@ -116,6 +125,7 @@
                         {% if meta.status == 'finished' and meta.excel_name %}
                           <a href="{{ url_for('download_excel', fname=meta.excel_name) }}" class="btn btn-outline-success btn-sm">下载 Excel</a>
                         {% endif %}
+                        <button type="button" class="btn btn-outline-danger btn-sm delete-job-btn" data-jobid="{{ jobid }}">删除</button>
                       </div>
                     </li>
                   {% endfor %}
@@ -125,9 +135,27 @@
               {% endif %}
             </div>
           </div>
+          <script>
+            document.querySelectorAll('.delete-job-btn').forEach(button => {
+              button.addEventListener('click', function(){
+                const jobid = this.dataset.jobid;
+                if(!confirm(`确定要删除任务 ${jobid} 吗？操作不可恢复！`)) return;
+                fetch("/delete_job/" + encodeURIComponent(jobid), { method: "POST" })
+                  .then(async response => {
+                    const data = await response.json().catch(() => ({}));
+                    if(!response.ok) {
+                      throw new Error(data.message || "删除失败");
+                    }
+                    alert(data.message || "已删除任务");
+                    location.reload();
+                  })
+                  .catch(err => alert("删除失败：" + err.message));
+              });
+            });
+          </script>
 
           <div class="card p-3">
-            <h5>最新结果摘要</h5>
+            <h5>最新结果摘要{% if latest_stock_label %}<span class="small-muted"> - {{ latest_stock_label }}</span>{% endif %}</h5>
             {% if latest_metrics %}
               <div class="row text-center">
                 <div class="col-sm-6 col-lg-3 mb-2">
@@ -193,7 +221,7 @@
       <div class="row mb-3">
         <div class="col">
           <div class="card p-3 mb-3">
-            <h5>最近任务结果（图片展示）</h5>
+            <h5>最近任务结果（图片展示）{% if latest_images_stock_label %}<span class="small-muted"> - {{ latest_images_stock_label }}</span>{% endif %}</h5>
             <p class="small-muted">下方图片为 <strong>收盘价预测 & 策略回测</strong> 的可视化输出：上图为真实/预测收盘价与交易信号，下图为策略累计收益与回撤点。</p>
             {% for im in latest_images %}
               <div class="col-12 mb-3">
