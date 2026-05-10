@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>任务 {{ jobid }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      body { background: #f8fafc; }
+      .card { border-radius: 12px; box-shadow: 0 6px 18px rgba(22,28,45,0.06); }
+      footer { margin-top:30px; color:#9ca3af; font-size:0.9rem; }
+      .img-thumb {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 700px !important;
+        object-fit: contain !important;
+        border-radius: 8px;
+        border: 1px solid #e6e9ef;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      pre { background:#0f172a;color:#e6eef8;padding:12px;border-radius:6px;overflow:auto; }
+      .metric { font-size:1.25rem; font-weight:700; }
+      .metric-sub { color:#6b7280; font-size:0.95rem; }
+    </style>
+  </head>
+  <body>
+    <div class="container py-4">
+      <a href="/" class="btn btn-link">&larr; 返回首页</a>
+      <div class="card p-3">
+        <h4>任务 <span class="text-primary">{{ jobid }}</span></h4>
+        <p class="small-muted">状态： <strong id="status">{{ status }}</strong></p>
+
+        <div id="progressArea">
+          {% if status == 'running' %}
+            <div class="alert alert-info">任务正在后台运行，页面会自动更新。请勿关闭页面。</div>
+          {% elif status == 'finished' %}
+            <div class="alert alert-success">任务已完成，见下方结果。</div>
+          {% elif status == 'error' %}
+            <div class="alert alert-danger">任务执行出错，见下方错误信息。</div>
+          {% endif %}
+        </div>
+
+        <div id="resultArea">
+          {% if status == 'finished' %}
+            <h5>关键指标</h5>
+            <div class="row mb-3 text-center">
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.total_return|default('N/A') }}</div>
+                  <div class="metric-sub">总收益率</div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.max_drawdown|default('N/A') }}</div>
+                  <div class="metric-sub">最大回撤</div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.sharpe|default('N/A') }}</div>
+                  <div class="metric-sub">年化夏普</div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ duration|default('—') }}</div>
+                  <div class="metric-sub">运行时长 (s)</div>
+                </div>
+              </div>
+            </div>
+            <h5>分类指标</h5>
+            <div class="row mb-3 text-center">
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.accuracy|default('N/A') }}</div>
+                  <div class="metric-sub">准确率</div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.precision|default('N/A') }}</div>
+                  <div class="metric-sub">精确率</div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.recall|default('N/A') }}</div>
+                  <div class="metric-sub">召回率</div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.f1|default('N/A') }}</div>
+                  <div class="metric-sub">F1</div>
+                </div>
+              </div>
+            </div>
+            {% if metrics.confusion_matrix %}
+            <div class="table-responsive mb-3">
+              <table class="table table-sm table-bordered text-center align-middle">
+                <thead>
+                  <tr><th></th><th>预测跌/不涨</th><th>预测涨</th></tr>
+                </thead>
+                <tbody>
+                  <tr><th>实际跌/不涨</th><td>{{ metrics.confusion_matrix.tn }}</td><td>{{ metrics.confusion_matrix.fp }}</td></tr>
+                  <tr><th>实际涨</th><td>{{ metrics.confusion_matrix.fn }}</td><td>{{ metrics.confusion_matrix.tp }}</td></tr>
+                </tbody>
+              </table>
+            </div>
+            {% endif %}
+<h5>交易周期（完整一笔交易）</h5>
+
+{% if trade_cycles and trade_cycles|length > 0 %}
+
+<table class="table table-bordered table-hover">
+  <thead>
+    <tr>
+      <th>开仓时间</th>
+      <th>平仓时间</th>
+      <th>开仓价</th>
+      <th>平仓价</th>
+      <th>收益率</th>
+      <th>持仓天数</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for t in trade_cycles %}
+    <tr>
+      <td>{{ t.entry_date }}</td>
+      <td>{{ t.exit_date }}</td>
+      <td>{{ "%.2f"|format(t.entry_price) }}</td>
+      <td>{{ "%.2f"|format(t.exit_price) }}</td>
+
+      <td>
+        {% if t.return > 0 %}
+          <span style="color:green">{{ "%.2f%%"|format(t.return*100) }}</span>
+        {% else %}
+          <span style="color:red">{{ "%.2f%%"|format(t.return*100) }}</span>
+        {% endif %}
+      </td>
+
+      <td>{{ t.hold_days }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% else %}
+  <div class="small-muted">没有形成完整交易周期</div>
+{% endif %}
+            <h5>图像（全部）</h5>
+            {% if images %}
+              {% for im in images %}
+                <div class="col-12 mb-3">
+                  <img src="{{ url_for('result_file', fname=im) }}" class="img-thumb" alt="结果图 {{ loop.index }}">
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="small-muted">未生成图像。</div>
+            {% endif %}
+
+            <h5>输出日志（部分）</h5>
+            <pre>{{ stdout_snippet }}</pre>
+
+            <div class="mt-2">
+            {% if csv_name %}
+              <a class="btn btn-outline-primary" href="{{ url_for('download_csv', fname=csv_name) }}">下载 CSV</a>
+            {% endif %}
+            {% if excel_name %}
+              <a class="btn btn-outline-secondary" href="{{ url_for('download_excel', fname=excel_name) }}">下载 EXCEL</a>
+            {% endif %}
+            </div>
+
+          {% elif status == 'error' %}
+            <h5>错误信息</h5>
+            <pre>{{ error }}</pre>
+            <h5>输出日志（部分）</h5>
+            <pre>{{ stdout_snippet }}</pre>
+          {% else %}
+            <p class="small-muted">任务仍在运行。页面会每 3 秒轮询更新。</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <footer class="text-center">
+        <div>演示平台 • 若需更稳的并发支持，可集成 Celery / Redis</div>
+      </footer>
+    </div>
+
+    <script>
+      const jobid = "{{ jobid }}";
+      function poll() {
+        fetch("/status/" + encodeURIComponent(jobid))
+          .then(r => r.json())
+          .then(data => {
+            document.getElementById('status').innerText = data.status;
+            if (data.status === 'finished' || data.status === 'error') {
+              location.reload();
+            } else {
+              setTimeout(poll, 3000);
+            }
+          })
+          .catch(e => setTimeout(poll, 3000));
+      }
+      {% if status == 'running' %}
+        setTimeout(poll, 2000);
+      {% endif %}
+    </script>
+  </body>
+</html>
