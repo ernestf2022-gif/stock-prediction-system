@@ -44,7 +44,7 @@
         <div class="col">
           <h2 class="brand">股票数据挖掘与趋势预测平台</h2>
           <p class="small-muted mx-auto" style="max-width:700px; font-size:1.1rem; line-height:1.6;">
-            使用 Tushare 获取历史行情，Vanilla LSTM 模型做收盘价预测、涨跌概率信号与高频策略回测
+            使用 Tushare 获取历史行情，Enhanced LSTM 模型做涨跌概率信号与日线策略回测
           </p>
         </div>
       </div>
@@ -203,32 +203,6 @@
               <div class="row text-center">
                 <div class="col-sm-6 col-lg-3 mb-2">
                   <div class="card p-2">
-                    <div class="metric">{{ latest_metrics.rmse|default('N/A') }}</div>
-                    <div class="metric-sub">RMSE</div>
-                  </div>
-                </div>
-                <div class="col-sm-6 col-lg-3 mb-2">
-                  <div class="card p-2">
-                    <div class="metric">{{ latest_metrics.mae|default('N/A') }}</div>
-                    <div class="metric-sub">MAE</div>
-                  </div>
-                </div>
-                <div class="col-sm-6 col-lg-3 mb-2">
-                  <div class="card p-2">
-                    <div class="metric">{{ latest_metrics.mape|default('N/A') }}</div>
-                    <div class="metric-sub">MAPE (%)</div>
-                  </div>
-                </div>
-                <div class="col-sm-6 col-lg-3 mb-2">
-                  <div class="card p-2">
-                    <div class="metric">{{ latest_metrics.r2|default('N/A') }}</div>
-                    <div class="metric-sub">R²</div>
-                  </div>
-                </div>
-              </div>
-              <div class="row text-center mt-2">
-                <div class="col-sm-6 col-lg-3 mb-2">
-                  <div class="card p-2">
                     <div class="metric">{{ latest_metrics.direction_accuracy|default('N/A') }}</div>
                     <div class="metric-sub">方向命中率</div>
                   </div>
@@ -241,8 +215,34 @@
                 </div>
                 <div class="col-sm-6 col-lg-3 mb-2">
                   <div class="card p-2">
+                    <div class="metric">{{ latest_metrics.positive_rate|default('N/A') }}</div>
+                    <div class="metric-sub">看涨比例</div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-lg-3 mb-2">
+                  <div class="card p-2">
+                    <div class="metric">{{ latest_metrics.signal_count|default('N/A') }}</div>
+                    <div class="metric-sub">买入信号</div>
+                  </div>
+                </div>
+              </div>
+              <div class="row text-center mt-2">
+                <div class="col-sm-6 col-lg-3 mb-2">
+                  <div class="card p-2">
                     <div class="metric">{{ latest_metrics.total_return|default('N/A') }}</div>
-                    <div class="metric-sub">高频总收益率</div>
+                    <div class="metric-sub">日线总收益率</div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-lg-3 mb-2">
+                  <div class="card p-2">
+                    <div class="metric">{{ latest_metrics.max_drawdown|default('N/A') }}</div>
+                    <div class="metric-sub">最大回撤</div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-lg-3 mb-2">
+                  <div class="card p-2">
+                    <div class="metric">{{ latest_metrics.sharpe|default('N/A') }}</div>
+                    <div class="metric-sub">年化夏普</div>
                   </div>
                 </div>
                 <div class="col-sm-6 col-lg-3 mb-2">
@@ -266,7 +266,7 @@
         <div class="col">
           <div class="card p-3 mb-3">
             <h5>最近任务结果（图片展示）{% if latest_images_stock_label %}<span class="small-muted"> - {{ latest_images_stock_label }}</span>{% endif %}</h5>
-            <p class="small-muted">下方图片为 <strong>收盘价预测、训练损失与高频策略回测</strong> 的可视化输出。</p>
+            <p class="small-muted">下方图片为 <strong>涨跌概率信号训练损失与日线策略回测</strong> 的可视化输出。</p>
             {% for im in latest_images %}
               <div class="col-12 mb-3">
                 <img src="{{ url_for('result_file', fname=im) }}" class="img-thumb" alt="结果图 {{ loop.index }}">

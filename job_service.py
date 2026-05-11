@@ -56,15 +56,11 @@ def parse_metrics_from_stdout(stdout_text):
     metrics = {}
     try:
         patterns = {
-            "rmse": r"RMSE: *([-\d\.]+)",
-            "mae": r"MAE: *([-\d\.]+)",
-            "mape": r"MAPE: *([-\d\.]+)",
-            "r2": r"R2: *([-\d\.]+)",
             "direction_accuracy": r"方向命中率: *([-\d\.]+)",
             "avg_up_probability": r"平均上涨概率: *([-\d\.]+)",
             "positive_rate": r"模型看涨比例: *([-\d\.]+)",
             "signal_hit_rate": r"交易信号命中率: *([-\d\.]+)",
-            "total_return": r"高频策略总收益率: *([-\d\.]+)",
+            "total_return": r"日线策略总收益率: *([-\d\.]+)",
             "max_drawdown": r"最大回撤: *([-\d\.]+)",
             "sharpe": r"年化夏普: *([-\d\.]+)",
             "final_capital": r"期末资产: *([-\d\.]+)",
@@ -496,10 +492,6 @@ def get_job_page_context(jobid):
     metrics = {}
     if raw_metrics:
         metrics = {
-            "rmse": format_metric(raw_metrics.get("rmse")),
-            "mae": format_metric(raw_metrics.get("mae")),
-            "mape": format_metric(raw_metrics.get("mape")),
-            "r2": format_metric(raw_metrics.get("r2")),
             "direction_accuracy": format_metric(raw_metrics.get("direction_accuracy")),
             "avg_up_probability": format_metric(raw_metrics.get("avg_up_probability")),
             "positive_rate": format_metric(raw_metrics.get("positive_rate")),

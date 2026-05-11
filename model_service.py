@@ -2,28 +2,24 @@
 import numpy as np
 import pandas as pd
 import torch
-from sklearn.metrics import (
-    mean_absolute_error,
-    mean_squared_error,
-    r2_score,
-)
 from sklearn.preprocessing import MinMaxScaler
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from backtest_service import run_high_frequency_backtest
+from backtest_service import run_daily_signal_backtest
 from config import (
     BATCH_SIZE,
     BUY_THRESHOLD,
     DIRECTION_RETURN_THRESHOLD,
     END_DATE,
     EPOCHS,
-    FUTURE_DAYS,
     INITIAL_CAPITAL,
     LOT_SIZE,
     MAX_POSITION_PCT,
+    MIN_COMMISSION,
     MIN_EXPECTED_RETURN,
     SELL_THRESHOLD,
+    SELL_TAX,
     SLIPPAGE,
     START_DATE,
     STOCK_CODE,
@@ -33,7 +29,7 @@ from config import (
     TRANSACTION_FEE,
 )
 from data_service import format_stock_label, prepare_stock_dataset, resolve_stock_name
-from plot_service import plot_high_frequency_backtest, plot_loss_curves, plot_price_prediction, setup_matplotlib
+from plot_service import plot_daily_backtest, plot_direction_loss_curves, setup_matplotlib
 
 
 FEATURES = [
@@ -52,19 +48,6 @@ FEATURES = [
     "LOG_RET",
     "INDEX_RET",
 ]
-
-
-class VanillaLSTM(nn.Module):
-    """普通 LSTM：用于收盘价预测。"""
-
-    def __init__(self, input_size, hidden_size=64):
-        super().__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
-        self.fc = nn.Linear(hidden_size, 1)
-
-    def forward(self, x):
-        out, _ = self.lstm(x)
-        return self.fc(out[:, -1, :])
 
 
 class VanillaLSTMDirection(nn.Module):
@@ -102,15 +85,6 @@ class VanillaLSTMDirection(nn.Module):
         return self.fc(context).squeeze(-1)
 
 
-def create_dataset(df, features=FEATURES, time_step=TIME_STEP):
-    X, y = [], []
-    close_idx = features.index("收盘价")
-    for i in range(len(df) - time_step - 1):
-        X.append(df.iloc[i : (i + time_step)].values)
-        y.append(df.iloc[i + time_step, close_idx])
-    return np.array(X), np.array(y)
-
-
 def create_direction_dataset(df, time_step=TIME_STEP, min_return=DIRECTION_RETURN_THRESHOLD):
     X, y = [], []
     raw_close = df.attrs.get("raw_close")
@@ -141,34 +115,21 @@ def scale_train_test_data(pandas_df, features=FEATURES):
 
     train_df = pd.DataFrame(train_scaled, columns=features, index=train_data_raw.index)
     test_df = pd.DataFrame(test_scaled, columns=features, index=test_data_raw.index)
-    scaled_df = pd.concat([train_df, test_df])
+    for column in ["开盘价", "最高价", "最低价", "收盘价"]:
+        train_df.attrs[f"raw_{column}"] = train_data_raw[column].to_numpy(dtype=float)
+        test_df.attrs[f"raw_{column}"] = test_data_raw[column].to_numpy(dtype=float)
+    if "交易日期" in pandas_df.columns:
+        train_df.attrs["raw_dates"] = pandas_df["交易日期"].iloc[:train_size].to_numpy()
+        test_df.attrs["raw_dates"] = pandas_df["交易日期"].iloc[train_size:].to_numpy()
     train_df.attrs["raw_close"] = train_data_raw["收盘价"].to_numpy(dtype=float)
     test_df.attrs["raw_close"] = test_data_raw["收盘价"].to_numpy(dtype=float)
-    return train_df, test_df, scaled_df, scaler
+    return train_df, test_df, scaler
 
 
 def build_data_loaders(train_data, test_data, batch_size=BATCH_SIZE):
-    X_train, y_train = create_dataset(train_data)
-    X_test, y_test = create_dataset(test_data)
     X_train_dir, y_train_dir = create_direction_dataset(train_data)
     X_test_dir, y_test_dir = create_direction_dataset(test_data)
 
-    train_loader = DataLoader(
-        TensorDataset(
-            torch.tensor(X_train, dtype=torch.float32),
-            torch.tensor(y_train, dtype=torch.float32).view(-1, 1),
-        ),
-        batch_size=batch_size,
-        shuffle=False,
-    )
-    test_loader = DataLoader(
-        TensorDataset(
-            torch.tensor(X_test, dtype=torch.float32),
-            torch.tensor(y_test, dtype=torch.float32).view(-1, 1),
-        ),
-        batch_size=batch_size,
-        shuffle=False,
-    )
     train_loader_dir = DataLoader(
         TensorDataset(torch.tensor(X_train_dir, dtype=torch.float32), torch.tensor(y_train_dir, dtype=torch.long)),
         batch_size=batch_size,
@@ -179,39 +140,7 @@ def build_data_loaders(train_data, test_data, batch_size=BATCH_SIZE):
         batch_size=batch_size,
         shuffle=False,
     )
-    return train_loader, train_loader_dir, test_loader, test_loader_dir
-
-
-def train_regression_model(model, train_loader, test_loader, epochs=EPOCHS):
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    criterion = nn.MSELoss()
-    train_loss_history = []
-    test_loss_history = []
-
-    for _ in range(epochs):
-        model.train()
-        epoch_loss = 0.0
-        batch_count = 0
-        for x, y in train_loader:
-            optimizer.zero_grad()
-            loss = criterion(model(x), y)
-            loss.backward()
-            optimizer.step()
-            epoch_loss += loss.item()
-            batch_count += 1
-        train_loss_history.append(epoch_loss / batch_count if batch_count else 0)
-
-        model.eval()
-        test_epoch_loss = 0.0
-        test_batch_count = 0
-        with torch.no_grad():
-            for x, y in test_loader:
-                test_loss = criterion(model(x), y)
-                test_epoch_loss += test_loss.item()
-                test_batch_count += 1
-        test_loss_history.append(test_epoch_loss / test_batch_count if test_batch_count else 0)
-
-    return train_loss_history, test_loss_history
+    return train_loader_dir, test_loader_dir
 
 
 def train_direction_model(model, train_loader, test_loader, epochs=EPOCHS):
@@ -252,60 +181,17 @@ def train_direction_model(model, train_loader, test_loader, epochs=EPOCHS):
     return train_loss_history, test_loss_history
 
 
-def train_models(train_loader, train_loader_dir, test_loader, test_loader_dir, input_size, epochs=EPOCHS):
-    model = VanillaLSTM(input_size)
+def train_models(train_loader_dir, test_loader_dir, input_size, epochs=EPOCHS):
     direction_model = VanillaLSTMDirection(input_size)
 
-    reg_loss_history, reg_test_loss_history = train_regression_model(model, train_loader, test_loader, epochs)
     dir_loss_history, dir_test_loss_history = train_direction_model(
         direction_model, train_loader_dir, test_loader_dir, epochs
     )
 
     return {
-        "model": model,
         "direction_model": direction_model,
-        "reg_loss_history": reg_loss_history,
-        "reg_test_loss_history": reg_test_loss_history,
         "dir_loss_history": dir_loss_history,
         "dir_test_loss_history": dir_test_loss_history,
-    }
-
-
-def predict_prices(model, test_loader, scaler, features=FEATURES):
-    model.eval()
-    preds, reals = [], []
-    with torch.no_grad():
-        for x, y in test_loader:
-            preds.append(model(x).numpy())
-            reals.append(y.numpy())
-
-    preds = np.concatenate(preds)
-    reals = np.concatenate(reals)
-
-    close_idx = features.index("收盘价")
-    dummy = np.zeros((len(preds), len(features)))
-    dummy[:, close_idx] = preds.flatten()
-    pred_price = scaler.inverse_transform(dummy)[:, close_idx]
-    dummy[:, close_idx] = reals.flatten()
-    real_price = scaler.inverse_transform(dummy)[:, close_idx]
-    return pred_price, real_price
-
-
-def evaluate_prices(real_price, pred_price):
-    mse = mean_squared_error(real_price, pred_price)
-    rmse = float(np.sqrt(mse))
-    mae = mean_absolute_error(real_price, pred_price)
-    mape = float(np.mean(np.abs((real_price - pred_price) / np.maximum(np.abs(real_price), 1e-8))) * 100)
-    r2 = r2_score(real_price, pred_price)
-    avg_price = real_price.mean()
-    error_rate = mae / avg_price
-    return {
-        "rmse": rmse,
-        "mae": float(mae),
-        "mape": mape,
-        "r2": float(r2),
-        "avg_price": float(avg_price),
-        "error_rate": float(error_rate),
     }
 
 
@@ -347,74 +233,76 @@ def evaluate_direction(dir_reals, dir_preds, probabilities=None, trade_signal=No
     }
 
 
-def predict_future_prices(model, scaled_df, scaler, pandas_df, features=FEATURES, future_days=FUTURE_DAYS):
-    future_prices = []
-    future_dates = []
-    close_idx = features.index("收盘价")
-    temp_window = scaled_df.iloc[-TIME_STEP:].values.copy()
-    next_date = pd.Timestamp(pandas_df["交易日期"].max())
+def inverse_test_market_data(test_data, prediction_len, scaler, features=FEATURES):
+    start = TIME_STEP
+    end = TIME_STEP + prediction_len
+    raw_close = test_data.attrs.get("raw_收盘价")
+    if raw_close is None:
+        raw_close = test_data.attrs.get("raw_close")
+    raw_map = {
+        "open": test_data.attrs.get("raw_开盘价"),
+        "high": test_data.attrs.get("raw_最高价"),
+        "low": test_data.attrs.get("raw_最低价"),
+        "close": raw_close,
+    }
+    raw_dates = test_data.attrs.get("raw_dates")
 
-    model.eval()
-    for _ in range(future_days):
-        next_date = next_date + pd.offsets.BDay(1)
-        future_dates.append(next_date.strftime("%Y-%m-%d"))
+    if all(values is not None and len(values) >= end for values in raw_map.values()):
+        market_data = pd.DataFrame({name: np.asarray(values[start:end], dtype=float) for name, values in raw_map.items()})
+    else:
+        market_data = pd.DataFrame()
+        for output_name, feature_name in {
+            "open": "开盘价",
+            "high": "最高价",
+            "low": "最低价",
+            "close": "收盘价",
+        }.items():
+            values = test_data[feature_name].iloc[start:end].to_numpy(dtype=float)
+            dummy = np.zeros((len(values), len(features)))
+            dummy[:, features.index(feature_name)] = values
+            market_data[output_name] = scaler.inverse_transform(dummy)[:, features.index(feature_name)]
 
-        input_tensor = torch.tensor(temp_window, dtype=torch.float32).unsqueeze(0)
-        with torch.no_grad():
-            pred = model(input_tensor).squeeze().detach().cpu().numpy().item()
-
-        dummy = np.zeros((1, len(features)))
-        dummy[:, close_idx] = pred
-        next_price = scaler.inverse_transform(dummy)[0, close_idx]
-        future_prices.append(next_price)
-
-        new_row = temp_window[-1].copy()
-        new_row[close_idx] = pred
-        temp_window = np.vstack([temp_window[1:], new_row])
-
-    return future_dates, future_prices
+    if raw_dates is not None and len(raw_dates) >= end:
+        market_data["date"] = raw_dates[start:end]
+    else:
+        market_data["date"] = np.arange(len(market_data))
+    return market_data
 
 
 def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE, stock_name=None):
-    """股票数据爬取 + Vanilla LSTM 收盘价预测 + 可视化完整流程。"""
+    """股票数据爬取 + 涨跌概率信号训练 + 日线策略回测流程。"""
     stock_name = stock_name or resolve_stock_name(stock_code, allow_remote=False)
     stock_label = format_stock_label(stock_code, stock_name)
     lstm_df, _, _ = prepare_stock_dataset(stock_code, start_date, end_date)
 
     setup_matplotlib()
     pandas_df = lstm_df.copy().dropna()
-    train_data, test_data, scaled_df, scaler = scale_train_test_data(pandas_df)
-    train_loader, train_loader_dir, test_loader, test_loader_dir = build_data_loaders(train_data, test_data)
+    train_data, test_data, scaler = scale_train_test_data(pandas_df)
+    train_loader_dir, test_loader_dir = build_data_loaders(train_data, test_data)
 
     trained = train_models(
-        train_loader,
         train_loader_dir,
-        test_loader,
         test_loader_dir,
         input_size=len(FEATURES),
         epochs=EPOCHS,
     )
-    model = trained["model"]
     direction_model = trained["direction_model"]
 
-    pred_price, real_price = predict_prices(model, test_loader, scaler)
-    price_metrics = evaluate_prices(real_price, pred_price)
     print(f"数据截止日期: {pandas_df['交易日期'].max()}")
-    print(f"模型: Vanilla LSTM 收盘价预测")
-    print(f"RMSE: {price_metrics['rmse']:.4f}, MAE: {price_metrics['mae']:.4f}")
-    print(f"MAPE: {price_metrics['mape']:.4f}%, R2: {price_metrics['r2']:.4f}")
-    print(f"平均股价: {price_metrics['avg_price']:.2f}")
-    print(f"MAE误差率: {price_metrics['error_rate']:.2%}")
 
     probabilities, dir_reals, dir_preds = predict_direction(direction_model, test_loader_dir)
-    backtest = run_high_frequency_backtest(
-        real_price,
-        pred_price,
+    market_data = inverse_test_market_data(test_data, len(probabilities), scaler)
+    backtest = run_daily_signal_backtest(
+        market_data["close"].to_numpy(dtype=float),
+        None,
         probabilities,
         pandas_df,
+        market_data=market_data,
         buy_threshold=BUY_THRESHOLD,
         sell_threshold=SELL_THRESHOLD,
         fee=TRANSACTION_FEE,
+        sell_tax=SELL_TAX,
+        min_commission=MIN_COMMISSION,
         initial_capital=INITIAL_CAPITAL,
         max_position_pct=MAX_POSITION_PCT,
         slippage=SLIPPAGE,
@@ -431,7 +319,7 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
     print(f"交易信号命中率: {cls_metrics['signal_hit_rate']:.4f}")
     print(f"买入信号次数: {cls_metrics['signal_count']}")
     print(
-        f"高频策略总收益率: {backtest.total_return:.4f}, "
+        f"日线策略总收益率: {backtest.total_return:.4f}, "
         f"最大回撤: {backtest.max_drawdown:.4f}, 年化夏普: {backtest.sharpe:.4f}"
     )
     print(
@@ -440,22 +328,13 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
         f"累计交易成本: {backtest.fees_paid:.2f}"
     )
 
-    future_dates, future_prices = predict_future_prices(model, scaled_df, scaler, pandas_df)
-    print("📢 未来10天预测价格：")
-    for date_text, price in zip(future_dates, future_prices):
-        print(f"{date_text}: {price:.2f}")
-
-    plot_loss_curves(
-        trained["reg_loss_history"],
-        trained["reg_test_loss_history"],
+    plot_direction_loss_curves(
         trained["dir_loss_history"],
         trained["dir_test_loss_history"],
         EPOCHS,
         stock_label=stock_label,
     )
-    dates = pandas_df["交易日期"].iloc[-len(real_price):]
-    plot_price_prediction(dates, real_price, pred_price, stock_label=stock_label)
-    plot_high_frequency_backtest(
+    plot_daily_backtest(
         backtest.dates_bt,
         backtest.cumulative_return,
         backtest.buy_hold,

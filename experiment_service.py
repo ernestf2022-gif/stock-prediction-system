@@ -22,7 +22,7 @@ from config import (
     ensure_directories,
 )
 from data_service import format_stock_label, prepare_stock_dataset, resolve_stock_name
-from model_service import FEATURES, VanillaLSTM, train_regression_model
+from model_service import FEATURES
 from plot_service import plot_price_prediction, setup_matplotlib
 
 
@@ -34,6 +34,19 @@ TECHNICAL_INDICATORS = ["MA5", "MA10", "MACD", "RSI", "VOLATILITY"]
 MARKET_INDEX_FEATURES = ["大盘指数", "INDEX_RET"]
 RETURN_FEATURES = ["RET", "LOG_RET", "INDEX_RET"]
 PRICE_FEATURES = ["开盘价", "最高价", "最低价", "收盘价", "成交额(千元)"]
+
+
+class VanillaLSTM(nn.Module):
+    """普通 LSTM：用于模型对比和特征消融中的收盘价预测。"""
+
+    def __init__(self, input_size, hidden_size=64):
+        super().__init__()
+        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
+        self.fc = nn.Linear(hidden_size, 1)
+
+    def forward(self, x):
+        out, _ = self.lstm(x)
+        return self.fc(out[:, -1, :])
 
 
 class DNNRegressor(nn.Module):
@@ -122,6 +135,24 @@ def _make_loader(X, y, batch_size=BATCH_SIZE):
         batch_size=batch_size,
         shuffle=False,
     )
+
+
+def train_regression_model(model, train_loader, test_loader, epochs=EPOCHS):
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    criterion = nn.MSELoss()
+
+    for _ in range(epochs):
+        model.train()
+        for x, y in train_loader:
+            optimizer.zero_grad()
+            loss = criterion(model(x), y)
+            loss.backward()
+            optimizer.step()
+
+        model.eval()
+        with torch.no_grad():
+            for x, y in test_loader:
+                criterion(model(x), y)
 
 
 def _inverse_close(values, scaler, features):

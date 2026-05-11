@@ -29,6 +29,12 @@ class BacktestResult:
     turnover: float
 
 
+def _trade_cost(gross, fee=0.001, min_commission=5.0, sell_tax=0.0, is_sell=False):
+    commission = max(float(gross) * fee, min_commission) if gross > 0 else 0.0
+    tax = float(gross) * sell_tax if is_sell else 0.0
+    return commission + tax
+
+
 def make_signal(
     probabilities,
     pred_price=None,
@@ -50,24 +56,29 @@ def make_signal(
         if min_len > 1:
             expected_return[1:] = pred_price[1:min_len] / np.maximum(real_price[: min_len - 1], 1e-8) - 1
     else:
-        expected_return = np.zeros(len(probabilities))
+        expected_return = None
 
     for idx, probability in enumerate(probabilities):
-        if probability >= buy_threshold and expected_return[idx] >= min_expected_return:
+        expected_ok = expected_return is None or expected_return[idx] >= min_expected_return
+        risk_off = expected_return is not None and expected_return[idx] <= -min_expected_return
+        if probability >= buy_threshold and expected_ok:
             signal[idx] = 1
-        elif probability <= sell_threshold or expected_return[idx] <= -min_expected_return:
+        elif probability <= sell_threshold or risk_off:
             signal[idx] = -1
     return np.array(signal)
 
 
-def run_high_frequency_backtest(
+def run_daily_signal_backtest(
     real_price,
     pred_price,
     probabilities,
     pandas_df,
+    market_data=None,
     buy_threshold=0.55,
     sell_threshold=0.45,
     fee=0.001,
+    sell_tax=0.0005,
+    min_commission=5.0,
     initial_capital=100000.0,
     max_position_pct=0.95,
     slippage=0.0005,
@@ -76,7 +87,11 @@ def run_high_frequency_backtest(
     stop_loss=0.035,
     take_profit=0.07,
 ):
-    """高频回测：按预测概率和预期收益调仓，用现金/持仓账户模拟交易。"""
+    """日线回测：收盘后产生信号，下一交易日开盘成交，按 OHLC 近似风控。"""
+    if market_data is not None:
+        market_data = market_data.reset_index(drop=True)
+        real_price = market_data["close"].to_numpy(dtype=float)
+
     signal = make_signal(
         probabilities,
         pred_price=pred_price,
@@ -85,14 +100,29 @@ def run_high_frequency_backtest(
         sell_threshold=sell_threshold,
         min_expected_return=min_expected_return,
     )
+    if pred_price is None:
+        pred_price = np.full(len(real_price), np.nan)
     min_len = min(len(signal), len(real_price), len(pred_price))
     signal = signal[:min_len]
     real_price = np.asarray(real_price[:min_len], dtype=float)
     pred_price = pred_price[:min_len]
-    if "交易日期" in pandas_df.columns:
-        dates = pandas_df["交易日期"].iloc[-min_len:]
+
+    if market_data is not None:
+        market_data = market_data.iloc[:min_len].copy()
+        open_price = market_data["open"].to_numpy(dtype=float)
+        high_price = market_data["high"].to_numpy(dtype=float)
+        low_price = market_data["low"].to_numpy(dtype=float)
+        close_price = market_data["close"].to_numpy(dtype=float)
+        dates = market_data["date"] if "date" in market_data.columns else pd.Series(np.arange(min_len))
     else:
-        dates = pd.Series(np.arange(min_len))
+        close_price = real_price
+        open_price = real_price
+        high_price = real_price
+        low_price = real_price
+        if "交易日期" in pandas_df.columns:
+            dates = pandas_df["交易日期"].iloc[-min_len:].reset_index(drop=True)
+        else:
+            dates = pd.Series(np.arange(min_len))
 
     if min_len <= 1:
         empty = np.array([])
@@ -127,20 +157,24 @@ def run_high_frequency_backtest(
     trade_count = 0
     winning_trades = 0
     closed_trades = 0
+    entry_idx = -1
     equity_curve = []
     signal_bt = []
     exposure_values = []
 
-    for idx in range(1, min_len):
-        previous_close = real_price[idx - 1]
-        current_close = real_price[idx]
-        equity_before = cash + shares * previous_close
+    for idx in range(min_len):
+        day_open = open_price[idx]
+        day_high = max(high_price[idx], day_open)
+        day_low = min(low_price[idx], day_open)
+        day_close = close_price[idx]
+        equity_before = cash + shares * day_open
         target_pct = max_position_pct if signal[idx] == 1 else 0.0
+        can_sell_today = shares > 0 and entry_idx >= 0 and entry_idx < idx
 
-        if target_pct <= 0 and shares > 0:
-            sell_price = previous_close * (1 - slippage)
+        if target_pct <= 0 and can_sell_today:
+            sell_price = day_open * (1 - slippage)
             gross = shares * sell_price
-            cost = gross * fee
+            cost = _trade_cost(gross, fee=fee, min_commission=min_commission, sell_tax=sell_tax, is_sell=True)
             cash += gross - cost
             fees_paid += cost
             turnover += gross
@@ -150,29 +184,38 @@ def run_high_frequency_backtest(
                 winning_trades += 1
             shares = 0
             entry_price = 0.0
+            entry_idx = -1
         elif target_pct > 0:
             target_value = equity_before * target_pct
-            buy_price = previous_close * (1 + slippage)
+            buy_price = day_open * (1 + slippage)
             target_shares = int(target_value / max(buy_price, 1e-8))
             if lot_size > 1:
                 target_shares = (target_shares // lot_size) * lot_size
             shares_to_buy = max(target_shares - shares, 0)
             gross = shares_to_buy * buy_price
-            cost = gross * fee
+            cost = _trade_cost(gross, fee=fee, min_commission=min_commission, is_sell=False)
             if shares_to_buy > 0 and gross + cost <= cash:
                 cash -= gross + cost
                 fees_paid += cost
                 turnover += gross
                 trade_count += 1
                 entry_price = buy_price if shares == 0 else entry_price
+                entry_idx = idx if shares == 0 else entry_idx
                 shares += shares_to_buy
 
-        if shares > 0 and entry_price > 0:
-            holding_return = current_close / entry_price - 1
-            if holding_return <= -stop_loss or holding_return >= take_profit:
-                sell_price = current_close * (1 - slippage)
+        can_sell_today = shares > 0 and entry_idx >= 0 and entry_idx < idx
+        if can_sell_today and entry_price > 0:
+            stop_price = entry_price * (1 - stop_loss)
+            take_price = entry_price * (1 + take_profit)
+            sell_price = None
+            if day_low <= stop_price:
+                sell_price = min(stop_price, day_open) * (1 - slippage)
+            elif day_high >= take_price:
+                sell_price = max(take_price, day_open) * (1 - slippage)
+
+            if sell_price is not None:
                 gross = shares * sell_price
-                cost = gross * fee
+                cost = _trade_cost(gross, fee=fee, min_commission=min_commission, sell_tax=sell_tax, is_sell=True)
                 cash += gross - cost
                 fees_paid += cost
                 turnover += gross
@@ -182,16 +225,17 @@ def run_high_frequency_backtest(
                     winning_trades += 1
                 shares = 0
                 entry_price = 0.0
+                entry_idx = -1
 
-        equity = cash + shares * current_close
+        equity = cash + shares * day_close
         equity_curve.append(equity)
         signal_bt.append(1 if shares > 0 else 0)
-        exposure_values.append((shares * current_close) / max(equity, 1e-8))
+        exposure_values.append((shares * day_close) / max(equity, 1e-8))
 
     equity_curve = np.asarray(equity_curve, dtype=float)
     signal_bt = np.asarray(signal_bt, dtype=int)
-    dates_bt = dates.iloc[1 : 1 + len(equity_curve)]
-    buy_hold = real_price[1 : 1 + len(equity_curve)] / real_price[0] - 1
+    dates_bt = dates.iloc[: len(equity_curve)]
+    buy_hold = close_price[: len(equity_curve)] / close_price[0] - 1
     cumulative_return = equity_curve / initial_capital - 1
     daily_return = np.diff(np.insert(equity_curve, 0, initial_capital)) / np.maximum(
         np.insert(equity_curve, 0, initial_capital)[:-1],
