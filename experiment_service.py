@@ -23,6 +23,7 @@ from config import (
 )
 from data_service import format_stock_label, prepare_stock_dataset, resolve_stock_name
 from model_service import FEATURES, VanillaLSTM, train_regression_model
+from plot_service import plot_price_prediction, setup_matplotlib
 
 
 EXPERIMENT_EPOCHS = min(EPOCHS, 30)
@@ -161,6 +162,39 @@ def _evaluate_prediction(name, real_price, pred_price):
     return row
 
 
+def _prediction_dates(pandas_df, prediction_len):
+    if "交易日期" in pandas_df.columns:
+        return pandas_df["交易日期"].iloc[-prediction_len:]
+    return np.arange(1, prediction_len + 1)
+
+
+def _safe_filename_token(value):
+    return str(value).replace(" ", "_").replace(".", "_").replace("/", "_").replace("\\", "_")
+
+
+def _save_model_prediction_plots(prediction_curves, stock_label, output_prefix=None):
+    ensure_directories()
+    setup_matplotlib()
+    safe_prefix = _safe_filename_token(output_prefix or "model_comparison")
+    images = []
+
+    for item in prediction_curves:
+        safe_model_name = _safe_filename_token(item["model_name"])
+        filename = f"{safe_prefix}_{safe_model_name}_price_prediction.png"
+        output_path = os.path.join(RESULT_DIR, filename)
+        plot_price_prediction(
+            item["dates"],
+            item["real_price"],
+            item["pred_price"],
+            stock_label=stock_label,
+            model_name=item["model_name"],
+            output_path=output_path,
+        )
+        images.append(filename)
+
+    return images
+
+
 def _prepare_feature_experiment(pandas_df, features):
     train_df, test_df, scaler = _scale_train_test_data(pandas_df, features)
     X_train, y_train, _ = _create_regression_dataset(train_df, features)
@@ -200,7 +234,7 @@ def _predict_arima(pandas_df, forecast_len):
         return test_close[TIME_STEP - 1 : TIME_STEP - 1 + forecast_len]
 
 
-def run_model_comparison(pandas_df, epochs=EXPERIMENT_EPOCHS):
+def run_model_comparison(pandas_df, epochs=EXPERIMENT_EPOCHS, include_predictions=False):
     pandas_df = _normalize_experiment_dataframe(pandas_df)
     features = FEATURES
     (
@@ -215,22 +249,38 @@ def run_model_comparison(pandas_df, epochs=EXPERIMENT_EPOCHS):
     ) = _prepare_feature_experiment(pandas_df, features)
 
     rows = []
+    prediction_curves = []
+    dates = _prediction_dates(pandas_df, len(real_price))
+
+    def add_prediction(name, pred_price):
+        rows.append(_evaluate_prediction(name, real_price, pred_price))
+        if include_predictions:
+            prediction_curves.append(
+                {
+                    "model_name": name,
+                    "dates": dates,
+                    "real_price": real_price,
+                    "pred_price": pred_price,
+                }
+            )
 
     arima_pred = _predict_arima(pandas_df, len(real_price))
-    rows.append(_evaluate_prediction("ARIMA", real_price, arima_pred))
+    add_prediction("ARIMA", arima_pred)
 
     dnn_model = _train_lstm(DNNRegressor, train_loader, test_loader, len(features), epochs)
     dnn_pred = _predict_torch_model(dnn_model, X_test, scaler, features)
-    rows.append(_evaluate_prediction("DNN", real_price, dnn_pred))
+    add_prediction("DNN", dnn_pred)
 
     cnn_model = _train_lstm(CNNRegressor, train_loader, test_loader, len(features), epochs)
     cnn_pred = _predict_torch_model(cnn_model, X_test, scaler, features)
-    rows.append(_evaluate_prediction("CNN", real_price, cnn_pred))
+    add_prediction("CNN", cnn_pred)
 
     vanilla_model = _train_lstm(VanillaLSTM, train_loader, test_loader, len(features), epochs)
     vanilla_pred = _predict_torch_model(vanilla_model, X_test, scaler, features)
-    rows.append(_evaluate_prediction("Vanilla LSTM", real_price, vanilla_pred))
+    add_prediction("Vanilla LSTM", vanilla_pred)
 
+    if include_predictions:
+        return rows, prediction_curves
     return rows
 
 
@@ -296,12 +346,18 @@ def run_experiments(stock_code, start_date, end_date, epochs=EXPERIMENT_EPOCHS, 
     lstm_df, _, _ = prepare_stock_dataset(stock_code, start_date, end_date)
     pandas_df = _normalize_experiment_dataframe(lstm_df)
 
-    model_rows = _format_rows(run_model_comparison(pandas_df, epochs=epochs))
+    model_rows_raw, model_prediction_curves = run_model_comparison(pandas_df, epochs=epochs, include_predictions=True)
+    model_rows = _format_rows(model_rows_raw)
     ablation_rows = _format_rows(run_ablation_experiment(pandas_df, epochs=epochs))
 
     model_csv_name, ablation_csv_name = _experiment_output_names(output_prefix)
     model_csv = _export_csv(model_rows, model_csv_name)
     ablation_csv = _export_csv(ablation_rows, ablation_csv_name)
+    model_prediction_images = _save_model_prediction_plots(
+        model_prediction_curves,
+        stock_label,
+        output_prefix=output_prefix,
+    )
 
     return {
         "stock_code": stock_code,
@@ -313,4 +369,5 @@ def run_experiments(stock_code, start_date, end_date, epochs=EXPERIMENT_EPOCHS, 
         "ablation_rows": ablation_rows,
         "model_csv": model_csv,
         "ablation_csv": ablation_csv,
+        "model_prediction_images": model_prediction_images,
     }

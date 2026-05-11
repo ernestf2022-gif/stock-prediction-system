@@ -60,27 +60,30 @@ def parse_metrics_from_stdout(stdout_text):
             "mae": r"MAE: *([-\d\.]+)",
             "mape": r"MAPE: *([-\d\.]+)",
             "r2": r"R2: *([-\d\.]+)",
-            "accuracy": r"分类准确率: *([-\d\.]+)",
-            "precision": r"分类精确率: *([-\d\.]+)",
-            "recall": r"分类召回率: *([-\d\.]+)",
-            "f1": r"分类F1: *([-\d\.]+)",
+            "direction_accuracy": r"方向命中率: *([-\d\.]+)",
+            "avg_up_probability": r"平均上涨概率: *([-\d\.]+)",
+            "positive_rate": r"模型看涨比例: *([-\d\.]+)",
+            "signal_hit_rate": r"交易信号命中率: *([-\d\.]+)",
             "total_return": r"高频策略总收益率: *([-\d\.]+)",
             "max_drawdown": r"最大回撤: *([-\d\.]+)",
             "sharpe": r"年化夏普: *([-\d\.]+)",
+            "final_capital": r"期末资产: *([-\d\.]+)",
+            "win_rate": r"胜率: *([-\d\.]+)",
+            "exposure": r"平均仓位: *([-\d\.]+)",
+            "fees_paid": r"累计交易成本: *([-\d\.]+)",
         }
         for key, pattern in patterns.items():
             matched = re.search(pattern, stdout_text)
             if matched:
                 metrics[key] = float(matched.group(1))
 
-        matched_cm = re.search(r"混淆矩阵: *TN=(\d+), *FP=(\d+), *FN=(\d+), *TP=(\d+)", stdout_text)
-        if matched_cm:
-            metrics["confusion_matrix"] = {
-                "tn": int(matched_cm.group(1)),
-                "fp": int(matched_cm.group(2)),
-                "fn": int(matched_cm.group(3)),
-                "tp": int(matched_cm.group(4)),
-            }
+        matched_signal_count = re.search(r"买入信号次数: *(\d+)", stdout_text)
+        if matched_signal_count:
+            metrics["signal_count"] = int(matched_signal_count.group(1))
+
+        matched_trade_count = re.search(r"交易次数: *(\d+)", stdout_text)
+        if matched_trade_count:
+            metrics["trade_count"] = int(matched_trade_count.group(1))
     except Exception:
         pass
     return metrics
@@ -411,7 +414,12 @@ def run_experiment_capture(stock_code, start_date, end_date, jobid):
                 meta["stdout"] = stdout_text
                 meta["finished_at"] = time.time()
                 meta["duration"] = duration
-                meta["result_files"] = [result.get("model_csv"), result.get("ablation_csv")]
+                model_prediction_images = result.get("model_prediction_images", [])
+                meta["result_files"] = [
+                    result.get("model_csv"),
+                    result.get("ablation_csv"),
+                    *model_prediction_images,
+                ]
                 meta["status"] = "finished"
                 save_jobs_unlocked()
             else:
@@ -452,6 +460,7 @@ def create_experiment_job(stock_code, start_date, end_date):
             "ablation_rows": [],
             "model_csv": None,
             "ablation_csv": None,
+            "model_prediction_images": [],
             "result_files": [],
         }
         save_jobs_unlocked()
@@ -491,14 +500,19 @@ def get_job_page_context(jobid):
             "mae": format_metric(raw_metrics.get("mae")),
             "mape": format_metric(raw_metrics.get("mape")),
             "r2": format_metric(raw_metrics.get("r2")),
-            "accuracy": format_metric(raw_metrics.get("accuracy")),
-            "precision": format_metric(raw_metrics.get("precision")),
-            "recall": format_metric(raw_metrics.get("recall")),
-            "f1": format_metric(raw_metrics.get("f1")),
+            "direction_accuracy": format_metric(raw_metrics.get("direction_accuracy")),
+            "avg_up_probability": format_metric(raw_metrics.get("avg_up_probability")),
+            "positive_rate": format_metric(raw_metrics.get("positive_rate")),
+            "signal_hit_rate": format_metric(raw_metrics.get("signal_hit_rate")),
+            "signal_count": raw_metrics.get("signal_count"),
             "total_return": format_metric(raw_metrics.get("total_return")),
             "max_drawdown": format_metric(raw_metrics.get("max_drawdown")),
             "sharpe": format_metric(raw_metrics.get("sharpe")),
-            "confusion_matrix": raw_metrics.get("confusion_matrix") or {},
+            "final_capital": format_metric(raw_metrics.get("final_capital")),
+            "trade_count": raw_metrics.get("trade_count"),
+            "win_rate": format_metric(raw_metrics.get("win_rate")),
+            "exposure": format_metric(raw_metrics.get("exposure")),
+            "fees_paid": format_metric(raw_metrics.get("fees_paid")),
         }
 
     return {
@@ -546,6 +560,7 @@ def get_experiment_page_context(jobid):
         "ablation_rows": meta_copy.get("ablation_rows", []),
         "model_csv": meta_copy.get("model_csv"),
         "ablation_csv": meta_copy.get("ablation_csv"),
+        "model_prediction_images": meta_copy.get("model_prediction_images", []),
     }
 
 

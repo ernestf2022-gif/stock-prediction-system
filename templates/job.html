@@ -71,64 +71,83 @@
                 </div>
               </div>
             </div>
-            <h5>涨跌方向分类指标</h5>
+            <h5>涨跌概率信号指标</h5>
             <div class="row mb-3 text-center">
               <div class="col-sm-6 col-lg-3 mb-2">
                 <div class="card p-2">
-                  <div class="metric">{{ metrics.accuracy|default('N/A') }}</div>
-                  <div class="metric-sub">准确率</div>
+                  <div class="metric">{{ metrics.direction_accuracy|default('N/A') }}</div>
+                  <div class="metric-sub">方向命中率</div>
                 </div>
               </div>
               <div class="col-sm-6 col-lg-3 mb-2">
                 <div class="card p-2">
-                  <div class="metric">{{ metrics.precision|default('N/A') }}</div>
-                  <div class="metric-sub">精确率</div>
+                  <div class="metric">{{ metrics.signal_hit_rate|default('N/A') }}</div>
+                  <div class="metric-sub">买入信号命中率</div>
                 </div>
               </div>
               <div class="col-sm-6 col-lg-3 mb-2">
                 <div class="card p-2">
-                  <div class="metric">{{ metrics.recall|default('N/A') }}</div>
-                  <div class="metric-sub">召回率</div>
+                  <div class="metric">{{ metrics.positive_rate|default('N/A') }}</div>
+                  <div class="metric-sub">模型看涨比例</div>
                 </div>
               </div>
               <div class="col-sm-6 col-lg-3 mb-2">
                 <div class="card p-2">
-                  <div class="metric">{{ metrics.f1|default('N/A') }}</div>
-                  <div class="metric-sub">F1</div>
+                  <div class="metric">{{ metrics.signal_count|default('N/A') }}</div>
+                  <div class="metric-sub">买入信号次数</div>
                 </div>
               </div>
             </div>
-            {% if metrics.confusion_matrix %}
-            <div class="table-responsive mb-3">
-              <table class="table table-sm table-bordered text-center align-middle">
-                <thead>
-                  <tr><th></th><th>预测跌/不涨</th><th>预测涨</th></tr>
-                </thead>
-                <tbody>
-                  <tr><th>实际跌/不涨</th><td>{{ metrics.confusion_matrix.tn }}</td><td>{{ metrics.confusion_matrix.fp }}</td></tr>
-                  <tr><th>实际涨</th><td>{{ metrics.confusion_matrix.fn }}</td><td>{{ metrics.confusion_matrix.tp }}</td></tr>
-                </tbody>
-              </table>
-            </div>
-            {% endif %}
             <h5>高频策略回测指标</h5>
             <div class="row mb-3 text-center">
-              <div class="col-sm-6 col-lg-4 mb-2">
+              <div class="col-sm-6 col-lg-3 mb-2">
                 <div class="card p-2">
                   <div class="metric">{{ metrics.total_return|default('N/A') }}</div>
                   <div class="metric-sub">总收益率</div>
                 </div>
               </div>
-              <div class="col-sm-6 col-lg-4 mb-2">
+              <div class="col-sm-6 col-lg-3 mb-2">
                 <div class="card p-2">
                   <div class="metric">{{ metrics.max_drawdown|default('N/A') }}</div>
                   <div class="metric-sub">最大回撤</div>
                 </div>
               </div>
-              <div class="col-sm-6 col-lg-4 mb-2">
+              <div class="col-sm-6 col-lg-3 mb-2">
                 <div class="card p-2">
                   <div class="metric">{{ metrics.sharpe|default('N/A') }}</div>
                   <div class="metric-sub">年化夏普</div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.final_capital|default('N/A') }}</div>
+                  <div class="metric-sub">期末资产</div>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-3 text-center">
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.trade_count|default('N/A') }}</div>
+                  <div class="metric-sub">交易次数</div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.win_rate|default('N/A') }}</div>
+                  <div class="metric-sub">胜率</div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.exposure|default('N/A') }}</div>
+                  <div class="metric-sub">平均仓位</div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.fees_paid|default('N/A') }}</div>
+                  <div class="metric-sub">累计交易成本</div>
                 </div>
               </div>
             </div>

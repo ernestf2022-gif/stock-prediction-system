@@ -44,7 +44,7 @@
         <div class="col">
           <h2 class="brand">股票数据挖掘与趋势预测平台</h2>
           <p class="small-muted mx-auto" style="max-width:700px; font-size:1.1rem; line-height:1.6;">
-            使用 Tushare 获取历史行情，Vanilla LSTM 模型做收盘价预测、涨跌分类与高频策略回测
+            使用 Tushare 获取历史行情，Vanilla LSTM 模型做收盘价预测、涨跌概率信号与高频策略回测
           </p>
         </div>
       </div>
@@ -229,14 +229,14 @@
               <div class="row text-center mt-2">
                 <div class="col-sm-6 col-lg-3 mb-2">
                   <div class="card p-2">
-                    <div class="metric">{{ latest_metrics.accuracy|default('N/A') }}</div>
-                    <div class="metric-sub">准确率</div>
+                    <div class="metric">{{ latest_metrics.direction_accuracy|default('N/A') }}</div>
+                    <div class="metric-sub">方向命中率</div>
                   </div>
                 </div>
                 <div class="col-sm-6 col-lg-3 mb-2">
                   <div class="card p-2">
-                    <div class="metric">{{ latest_metrics.f1|default('N/A') }}</div>
-                    <div class="metric-sub">F1</div>
+                    <div class="metric">{{ latest_metrics.signal_hit_rate|default('N/A') }}</div>
+                    <div class="metric-sub">信号命中率</div>
                   </div>
                 </div>
                 <div class="col-sm-6 col-lg-3 mb-2">
@@ -247,8 +247,8 @@
                 </div>
                 <div class="col-sm-6 col-lg-3 mb-2">
                   <div class="card p-2">
-                    <div class="metric">{{ latest_metrics.sharpe|default('N/A') }}</div>
-                    <div class="metric-sub">年化夏普</div>
+                    <div class="metric">{{ latest_metrics.final_capital|default('N/A') }}</div>
+                    <div class="metric-sub">期末资产</div>
                   </div>
                 </div>
               </div>
@@ -266,7 +266,7 @@
         <div class="col">
           <div class="card p-3 mb-3">
             <h5>最近任务结果（图片展示）{% if latest_images_stock_label %}<span class="small-muted"> - {{ latest_images_stock_label }}</span>{% endif %}</h5>
-            <p class="small-muted">下方图片为 <strong>收盘价预测、涨跌分类 ROC 与高频策略回测</strong> 的可视化输出。</p>
+            <p class="small-muted">下方图片为 <strong>收盘价预测、训练损失与高频策略回测</strong> 的可视化输出。</p>
             {% for im in latest_images %}
               <div class="col-12 mb-3">
                 <img src="{{ url_for('result_file', fname=im) }}" class="img-thumb" alt="结果图 {{ loop.index }}">

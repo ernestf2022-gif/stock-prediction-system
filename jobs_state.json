@@ -243,5 +243,1426 @@
     ],
     "epochs": 30,
     "finished_at": 1778502736.8996124
+  },
+  "600895.SH_20260511210041": {
+    "job_type": "prediction",
+    "status": "finished",
+    "created_at": 1778504441.5077963,
+    "images": [
+      "600895.SH_20260511210041_0.png",
+      "600895.SH_20260511210041_1.png",
+      "600895.SH_20260511210041_2.png",
+      "600895.SH_20260511210041_3.png"
+    ],
+    "stdout": "数据截止日期: 2026-05-06 00:00:00\n模型: Vanilla LSTM 收盘价预测\nRMSE: 1.3022, MAE: 0.8294\nMAPE: 2.3108%, R2: 0.9714\n平均股价: 33.48\nMAE误差率: 2.48%\n分类模型: Vanilla LSTM 涨跌方向分类\n分类准确率: 0.5000\n分类精确率: 0.4894\n分类召回率: 0.5679\n分类F1: 0.5257\n混淆矩阵: TN=74, FP=96, FN=70, TP=92\n高频策略总收益率: -0.0626, 最大回撤: -0.3234, 年化夏普: -0.1821\n📢 未来10天预测价格：\n2026-05-07: 37.43\n2026-05-08: 37.66\n2026-05-11: 37.76\n2026-05-12: 37.80\n2026-05-13: 37.80\n2026-05-14: 37.80\n2026-05-15: 37.79\n2026-05-18: 37.78\n2026-05-19: 37.77\n2026-05-20: 37.77\n",
+    "error": null,
+    "metrics": {
+      "rmse": 1.3022,
+      "mae": 0.8294,
+      "mape": 2.3108,
+      "r2": 0.9714,
+      "accuracy": 0.5,
+      "precision": 0.4894,
+      "recall": 0.5679,
+      "f1": 0.5257,
+      "total_return": -0.0626,
+      "max_drawdown": -0.3234,
+      "sharpe": -0.1821,
+      "confusion_matrix": {
+        "tn": 74,
+        "fp": 96,
+        "fn": 70,
+        "tp": 92
+      }
+    },
+    "stock_code": "600895.SH",
+    "stock_name": "张江高科",
+    "csv_name": "600895_SH_LSTM.csv",
+    "excel_name": "600895_SH_LSTM.xlsx",
+    "duration": 24.47771644592285,
+    "finished_at": 1778504465.9884982
+  },
+  "600639.SH_20260511210158": {
+    "job_type": "prediction",
+    "status": "finished",
+    "created_at": 1778504518.1509135,
+    "images": [
+      "600639.SH_20260511210158_0.png",
+      "600639.SH_20260511210158_1.png",
+      "600639.SH_20260511210158_2.png",
+      "600639.SH_20260511210158_3.png"
+    ],
+    "stdout": "数据截止日期: 2026-05-06 00:00:00\n模型: Vanilla LSTM 收盘价预测\nRMSE: 0.4740, MAE: 0.4013\nMAPE: 3.7290%, R2: -1.2914\n平均股价: 10.78\nMAE误差率: 3.72%\n分类模型: Vanilla LSTM 涨跌方向分类\n分类准确率: 0.5151\n分类精确率: 0.5074\n分类召回率: 0.8364\n分类F1: 0.6316\n混淆矩阵: TN=33, FP=134, FN=27, TP=138\n高频策略总收益率: -0.0202, 最大回撤: -0.0533, 年化夏普: -0.3504\n📢 未来10天预测价格：\n2026-05-07: 9.51\n2026-05-08: 9.49\n2026-05-11: 9.52\n2026-05-12: 9.55\n2026-05-13: 9.60\n2026-05-14: 9.63\n2026-05-15: 9.66\n2026-05-18: 9.67\n2026-05-19: 9.69\n2026-05-20: 9.69\n",
+    "error": null,
+    "metrics": {
+      "rmse": 0.474,
+      "mae": 0.4013,
+      "mape": 3.729,
+      "r2": -1.2914,
+      "accuracy": 0.5151,
+      "precision": 0.5074,
+      "recall": 0.8364,
+      "f1": 0.6316,
+      "total_return": -0.0202,
+      "max_drawdown": -0.0533,
+      "sharpe": -0.3504,
+      "confusion_matrix": {
+        "tn": 33,
+        "fp": 134,
+        "fn": 27,
+        "tp": 138
+      }
+    },
+    "stock_code": "600639.SH",
+    "stock_name": "浦东金桥",
+    "csv_name": "600639_SH_LSTM.csv",
+    "excel_name": "600639_SH_LSTM.xlsx",
+    "duration": 23.015604734420776,
+    "finished_at": 1778504541.1695087
+  },
+  "600639.SH_20260511210435": {
+    "job_type": "prediction",
+    "status": "finished",
+    "created_at": 1778504675.6076777,
+    "images": [
+      "600639.SH_20260511210435_0.png",
+      "600639.SH_20260511210435_1.png",
+      "600639.SH_20260511210435_2.png",
+      "600639.SH_20260511210435_3.png"
+    ],
+    "stdout": "股票日线数据 使用回退截止日期：20251229\n大盘指数数据 使用回退截止日期：20251229\n数据截止日期: 2025-12-29 00:00:00\n模型: Vanilla LSTM 收盘价预测\nRMSE: 0.1853, MAE: 0.1340\nMAPE: 1.2467%, R2: 0.6477\n平均股价: 10.77\nMAE误差率: 1.24%\n分类模型: Vanilla LSTM 涨跌方向分类\n分类准确率: 0.4886\n分类精确率: 0.5000\n分类召回率: 0.8929\n分类F1: 0.6410\n混淆矩阵: TN=7, FP=100, FN=12, TP=100\n高频策略总收益率: -0.1018, 最大回撤: -0.1441, 年化夏普: -0.7915\n📢 未来10天预测价格：\n2025-12-30: 10.40\n2025-12-31: 10.40\n2026-01-01: 10.41\n2026-01-02: 10.42\n2026-01-05: 10.43\n2026-01-06: 10.44\n2026-01-07: 10.44\n2026-01-08: 10.44\n2026-01-09: 10.44\n2026-01-12: 10.44\n",
+    "error": null,
+    "metrics": {
+      "rmse": 0.1853,
+      "mae": 0.134,
+      "mape": 1.2467,
+      "r2": 0.6477,
+      "accuracy": 0.4886,
+      "precision": 0.5,
+      "recall": 0.8929,
+      "f1": 0.641,
+      "total_return": -0.1018,
+      "max_drawdown": -0.1441,
+      "sharpe": -0.7915,
+      "confusion_matrix": {
+        "tn": 7,
+        "fp": 100,
+        "fn": 12,
+        "tp": 100
+      }
+    },
+    "stock_code": "600639.SH",
+    "stock_name": "浦东金桥",
+    "csv_name": "600639_SH_LSTM.csv",
+    "excel_name": "600639_SH_LSTM.xlsx",
+    "duration": 14.216124534606934,
+    "finished_at": 1778504689.8277888
+  },
+  "600663.SH_20260511210547": {
+    "job_type": "prediction",
+    "status": "finished",
+    "created_at": 1778504747.0040796,
+    "images": [
+      "600663.SH_20260511210547_0.png",
+      "600663.SH_20260511210547_1.png",
+      "600663.SH_20260511210547_2.png",
+      "600663.SH_20260511210547_3.png"
+    ],
+    "stdout": "数据截止日期: 2026-05-06 00:00:00\n模型: Vanilla LSTM 收盘价预测\nRMSE: 0.2801, MAE: 0.2427\nMAPE: 2.8521%, R2: 0.7386\n平均股价: 8.65\nMAE误差率: 2.81%\n分类模型: Vanilla LSTM 涨跌方向分类\n分类准确率: 0.4970\n分类精确率: 0.4509\n分类召回率: 0.5235\n分类F1: 0.4845\n混淆矩阵: TN=86, FP=95, FN=71, TP=78\n高频策略总收益率: -0.0490, 最大回撤: -0.1013, 年化夏普: -0.5302\n📢 未来10天预测价格：\n2026-05-07: 8.23\n2026-05-08: 8.28\n2026-05-11: 8.27\n2026-05-12: 8.22\n2026-05-13: 8.15\n2026-05-14: 8.09\n2026-05-15: 8.04\n2026-05-18: 8.01\n2026-05-19: 7.99\n2026-05-20: 7.97\n",
+    "error": null,
+    "metrics": {
+      "rmse": 0.2801,
+      "mae": 0.2427,
+      "mape": 2.8521,
+      "r2": 0.7386,
+      "accuracy": 0.497,
+      "precision": 0.4509,
+      "recall": 0.5235,
+      "f1": 0.4845,
+      "total_return": -0.049,
+      "max_drawdown": -0.1013,
+      "sharpe": -0.5302,
+      "confusion_matrix": {
+        "tn": 86,
+        "fp": 95,
+        "fn": 71,
+        "tp": 78
+      }
+    },
+    "stock_code": "600663.SH",
+    "stock_name": "陆家嘴",
+    "csv_name": "600663_SH_LSTM.csv",
+    "excel_name": "600663_SH_LSTM.xlsx",
+    "duration": 20.246789932250977,
+    "finished_at": 1778504767.2548559
+  },
+  "600848.SH_20260511210626": {
+    "job_type": "prediction",
+    "status": "finished",
+    "created_at": 1778504786.6605012,
+    "images": [
+      "600848.SH_20260511210626_0.png",
+      "600848.SH_20260511210626_1.png",
+      "600848.SH_20260511210626_2.png",
+      "600848.SH_20260511210626_3.png"
+    ],
+    "stdout": "数据截止日期: 2026-05-06 00:00:00\n模型: Vanilla LSTM 收盘价预测\nRMSE: 0.5267, MAE: 0.4630\nMAPE: 4.5571%, R2: 0.7769\n平均股价: 10.20\nMAE误差率: 4.54%\n分类模型: Vanilla LSTM 涨跌方向分类\n分类准确率: 0.4608\n分类精确率: 0.4523\n分类召回率: 0.5625\n分类F1: 0.5014\n混淆矩阵: TN=63, FP=109, FN=70, TP=90\n高频策略总收益率: -0.4395, 最大回撤: -0.4592, 年化夏普: -1.8368\n📢 未来10天预测价格：\n2026-05-07: 10.07\n2026-05-08: 10.23\n2026-05-11: 10.29\n2026-05-12: 10.30\n2026-05-13: 10.29\n2026-05-14: 10.27\n2026-05-15: 10.26\n2026-05-18: 10.25\n2026-05-19: 10.24\n2026-05-20: 10.24\n",
+    "error": null,
+    "metrics": {
+      "rmse": 0.5267,
+      "mae": 0.463,
+      "mape": 4.5571,
+      "r2": 0.7769,
+      "accuracy": 0.4608,
+      "precision": 0.4523,
+      "recall": 0.5625,
+      "f1": 0.5014,
+      "total_return": -0.4395,
+      "max_drawdown": -0.4592,
+      "sharpe": -1.8368,
+      "confusion_matrix": {
+        "tn": 63,
+        "fp": 109,
+        "fn": 70,
+        "tp": 90
+      }
+    },
+    "stock_code": "600848.SH",
+    "stock_name": "上海临港",
+    "csv_name": "600848_SH_LSTM.csv",
+    "excel_name": "600848_SH_LSTM.xlsx",
+    "duration": 21.263319492340088,
+    "finished_at": 1778504807.9278076
+  },
+  "600604.SH_20260511210723": {
+    "job_type": "prediction",
+    "status": "finished",
+    "created_at": 1778504843.5625174,
+    "images": [
+      "600604.SH_20260511210723_0.png",
+      "600604.SH_20260511210723_1.png",
+      "600604.SH_20260511210723_2.png",
+      "600604.SH_20260511210723_3.png"
+    ],
+    "stdout": "数据截止日期: 2026-05-06 00:00:00\n模型: Vanilla LSTM 收盘价预测\nRMSE: 0.1654, MAE: 0.1117\nMAPE: 2.0441%, R2: 0.9261\n平均股价: 5.30\nMAE误差率: 2.11%\n分类模型: Vanilla LSTM 涨跌方向分类\n分类准确率: 0.4970\n分类精确率: 0.4841\n分类召回率: 0.8671\n分类F1: 0.6213\n混淆矩阵: TN=28, FP=146, FN=21, TP=137\n高频策略总收益率: -0.1394, 最大回撤: -0.1845, 年化夏普: -0.3936\n📢 未来10天预测价格：\n2026-05-07: 4.84\n2026-05-08: 4.86\n2026-05-11: 4.87\n2026-05-12: 4.87\n2026-05-13: 4.87\n2026-05-14: 4.87\n2026-05-15: 4.87\n2026-05-18: 4.87\n2026-05-19: 4.87\n2026-05-20: 4.87\n",
+    "error": null,
+    "metrics": {
+      "rmse": 0.1654,
+      "mae": 0.1117,
+      "mape": 2.0441,
+      "r2": 0.9261,
+      "accuracy": 0.497,
+      "precision": 0.4841,
+      "recall": 0.8671,
+      "f1": 0.6213,
+      "total_return": -0.1394,
+      "max_drawdown": -0.1845,
+      "sharpe": -0.3936,
+      "confusion_matrix": {
+        "tn": 28,
+        "fp": 146,
+        "fn": 21,
+        "tp": 137
+      }
+    },
+    "stock_code": "600604.SH",
+    "stock_name": "市北高新",
+    "csv_name": "600604_SH_LSTM.csv",
+    "excel_name": "600604_SH_LSTM.xlsx",
+    "duration": 20.723746061325073,
+    "finished_at": 1778504864.2912467
+  },
+  "EXP_600895.SH_20260511210815": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1778504895.6321547,
+    "stdout": "",
+    "error": null,
+    "stock_code": "600895.SH",
+    "stock_name": "张江高科",
+    "stock_label": "张江高科（600895.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 24.36039662361145,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 8.095409,
+        "MAE": 7.119165,
+        "MAPE": 20.64266,
+        "R²": -0.105319
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 1.687855,
+        "MAE": 1.13692,
+        "MAPE": 3.25306,
+        "R²": 0.951951
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 2.492071,
+        "MAE": 1.83133,
+        "MAPE": 5.225178,
+        "R²": 0.895256
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 1.505929,
+        "MAE": 1.00502,
+        "MAPE": 2.696005,
+        "R²": 0.961751
+      }
+    ],
+    "ablation_rows": [
+      {
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 1.956887,
+        "MAE": 1.376022,
+        "MAPE": 3.589748,
+        "R²": 0.935414
+      },
+      {
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 1.949835,
+        "MAE": 1.350002,
+        "MAPE": 3.51636,
+        "R²": 0.935878
+      },
+      {
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 1.824438,
+        "MAE": 1.416928,
+        "MAPE": 3.977458,
+        "R²": 0.94386
+      },
+      {
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 1.586229,
+        "MAE": 1.080993,
+        "MAPE": 2.905545,
+        "R²": 0.957563
+      },
+      {
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 1.450339,
+        "MAE": 1.059519,
+        "MAPE": 3.089578,
+        "R²": 0.964523
+      }
+    ],
+    "model_csv": "EXP_600895_SH_20260511210815_model_comparison.csv",
+    "ablation_csv": "EXP_600895_SH_20260511210815_ablation_result.csv",
+    "result_files": [
+      "EXP_600895_SH_20260511210815_model_comparison.csv",
+      "EXP_600895_SH_20260511210815_ablation_result.csv"
+    ],
+    "epochs": 30,
+    "finished_at": 1778504919.9945416
+  },
+  "EXP_600604.SH_20260511210904": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1778504944.4507327,
+    "stdout": "",
+    "error": null,
+    "stock_code": "600604.SH",
+    "stock_name": "市北高新",
+    "stock_label": "市北高新（600604.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 24.773982763290405,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 0.814742,
+        "MAE": 0.646799,
+        "MAPE": 11.407578,
+        "R²": -0.794094
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.293325,
+        "MAE": 0.219707,
+        "MAPE": 4.246236,
+        "R²": 0.767457
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 1.09176,
+        "MAE": 0.98954,
+        "MAPE": 18.798428,
+        "R²": -2.221513
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.21706,
+        "MAE": 0.173377,
+        "MAPE": 3.209599,
+        "R²": 0.87266
+      }
+    ],
+    "ablation_rows": [
+      {
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.164609,
+        "MAE": 0.111291,
+        "MAPE": 2.070677,
+        "R²": 0.926766
+      },
+      {
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.190204,
+        "MAE": 0.130439,
+        "MAPE": 2.395012,
+        "R²": 0.902221
+      },
+      {
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.1811,
+        "MAE": 0.126918,
+        "MAPE": 2.349759,
+        "R²": 0.911357
+      },
+      {
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.266662,
+        "MAE": 0.202381,
+        "MAPE": 3.749096,
+        "R²": 0.807812
+      },
+      {
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.244048,
+        "MAE": 0.172493,
+        "MAPE": 3.163401,
+        "R²": 0.839026
+      }
+    ],
+    "model_csv": "EXP_600604_SH_20260511210904_model_comparison.csv",
+    "ablation_csv": "EXP_600604_SH_20260511210904_ablation_result.csv",
+    "result_files": [
+      "EXP_600604_SH_20260511210904_model_comparison.csv",
+      "EXP_600604_SH_20260511210904_ablation_result.csv"
+    ],
+    "epochs": 30,
+    "finished_at": 1778504969.2267082
+  },
+  "600000.SH_20260511211007": {
+    "job_type": "prediction",
+    "status": "finished",
+    "created_at": 1778505007.679855,
+    "images": [
+      "600000.SH_20260511211007_0.png",
+      "600000.SH_20260511211007_1.png",
+      "600000.SH_20260511211007_2.png",
+      "600000.SH_20260511211007_3.png"
+    ],
+    "stdout": "数据截止日期: 2026-05-06 00:00:00\n模型: Vanilla LSTM 收盘价预测\nRMSE: 0.6828, MAE: 0.5922\nMAPE: 4.9338%, R2: 0.7652\n平均股价: 11.46\nMAE误差率: 5.17%\n分类模型: Vanilla LSTM 涨跌方向分类\n分类准确率: 0.5151\n分类精确率: 0.4844\n分类召回率: 0.1950\n分类F1: 0.2780\n混淆矩阵: TN=140, FP=33, FN=128, TP=31\n高频策略总收益率: 0.0830, 最大回撤: -0.0222, 年化夏普: 1.3163\n📢 未来10天预测价格：\n2026-05-07: 9.01\n2026-05-08: 8.98\n2026-05-11: 8.97\n2026-05-12: 8.97\n2026-05-13: 8.97\n2026-05-14: 8.98\n2026-05-15: 8.98\n2026-05-18: 8.98\n2026-05-19: 8.98\n2026-05-20: 8.98\n",
+    "error": null,
+    "metrics": {
+      "rmse": 0.6828,
+      "mae": 0.5922,
+      "mape": 4.9338,
+      "r2": 0.7652,
+      "accuracy": 0.5151,
+      "precision": 0.4844,
+      "recall": 0.195,
+      "f1": 0.278,
+      "total_return": 0.083,
+      "max_drawdown": -0.0222,
+      "sharpe": 1.3163,
+      "confusion_matrix": {
+        "tn": 140,
+        "fp": 33,
+        "fn": 128,
+        "tp": 31
+      }
+    },
+    "stock_code": "600000.SH",
+    "stock_name": "浦发银行",
+    "csv_name": "600000_SH_LSTM.csv",
+    "excel_name": "600000_SH_LSTM.xlsx",
+    "duration": 20.399755716323853,
+    "finished_at": 1778505028.0845947
+  },
+  "600015.SH_20260511211041": {
+    "job_type": "prediction",
+    "status": "finished",
+    "created_at": 1778505041.7936563,
+    "images": [
+      "600015.SH_20260511211041_0.png",
+      "600015.SH_20260511211041_1.png",
+      "600015.SH_20260511211041_2.png",
+      "600015.SH_20260511211041_3.png"
+    ],
+    "stdout": "数据截止日期: 2026-05-06 00:00:00\n模型: Vanilla LSTM 收盘价预测\nRMSE: 0.1568, MAE: 0.1327\nMAPE: 1.7964%, R2: 0.9058\n平均股价: 7.34\nMAE误差率: 1.81%\n分类模型: Vanilla LSTM 涨跌方向分类\n分类准确率: 0.5361\n分类精确率: 0.4938\n分类召回率: 0.5197\n分类F1: 0.5064\n混淆矩阵: TN=99, FP=81, FN=73, TP=79\n高频策略总收益率: 0.0303, 最大回撤: -0.1086, 年化夏普: 0.1859\n📢 未来10天预测价格：\n2026-05-07: 6.81\n2026-05-08: 6.81\n2026-05-11: 6.81\n2026-05-12: 6.82\n2026-05-13: 6.82\n2026-05-14: 6.82\n2026-05-15: 6.81\n2026-05-18: 6.81\n2026-05-19: 6.81\n2026-05-20: 6.81\n",
+    "error": null,
+    "metrics": {
+      "rmse": 0.1568,
+      "mae": 0.1327,
+      "mape": 1.7964,
+      "r2": 0.9058,
+      "accuracy": 0.5361,
+      "precision": 0.4938,
+      "recall": 0.5197,
+      "f1": 0.5064,
+      "total_return": 0.0303,
+      "max_drawdown": -0.1086,
+      "sharpe": 0.1859,
+      "confusion_matrix": {
+        "tn": 99,
+        "fp": 81,
+        "fn": 73,
+        "tp": 79
+      }
+    },
+    "stock_code": "600015.SH",
+    "stock_name": "华夏银行",
+    "csv_name": "600015_SH_LSTM.csv",
+    "excel_name": "600015_SH_LSTM.xlsx",
+    "duration": 20.132739782333374,
+    "finished_at": 1778505061.9313786
+  },
+  "EXP_600015.SH_20260511212833": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1778506113.145931,
+    "stdout": "",
+    "error": null,
+    "stock_code": "600015.SH",
+    "stock_name": "华夏银行",
+    "stock_label": "华夏银行（600015.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 24.068540573120117,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 0.574328,
+        "MAE": 0.466521,
+        "MAPE": 6.168955,
+        "R²": -0.263252
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.511025,
+        "MAE": 0.471707,
+        "MAPE": 6.32675,
+        "R²": -0.000125
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.398068,
+        "MAE": 0.340398,
+        "MAPE": 4.61322,
+        "R²": 0.393144
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.142179,
+        "MAE": 0.110411,
+        "MAPE": 1.483428,
+        "R²": 0.922582
+      }
+    ],
+    "ablation_rows": [
+      {
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.159624,
+        "MAE": 0.131872,
+        "MAPE": 1.779012,
+        "R²": 0.902418
+      },
+      {
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.123411,
+        "MAE": 0.092915,
+        "MAPE": 1.253822,
+        "R²": 0.941672
+      },
+      {
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.442311,
+        "MAE": 0.41115,
+        "MAPE": 5.512345,
+        "R²": 0.250751
+      },
+      {
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.149002,
+        "MAE": 0.113974,
+        "MAPE": 1.527405,
+        "R²": 0.914973
+      },
+      {
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.167341,
+        "MAE": 0.119527,
+        "MAPE": 1.639411,
+        "R²": 0.892755
+      }
+    ],
+    "model_csv": "EXP_600015_SH_20260511212833_model_comparison.csv",
+    "ablation_csv": "EXP_600015_SH_20260511212833_ablation_result.csv",
+    "result_files": [
+      "EXP_600015_SH_20260511212833_model_comparison.csv",
+      "EXP_600015_SH_20260511212833_ablation_result.csv"
+    ],
+    "epochs": 30,
+    "finished_at": 1778506137.2164655
+  },
+  "601607.SH_20260511212942": {
+    "job_type": "prediction",
+    "status": "finished",
+    "created_at": 1778506182.0470319,
+    "images": [
+      "601607.SH_20260511212942_0.png",
+      "601607.SH_20260511212942_1.png",
+      "601607.SH_20260511212942_2.png",
+      "601607.SH_20260511212942_3.png"
+    ],
+    "stdout": "数据截止日期: 2026-05-06 00:00:00\n模型: Vanilla LSTM 收盘价预测\nRMSE: 0.3297, MAE: 0.2789\nMAPE: 1.5359%, R2: 0.9017\n平均股价: 18.40\nMAE误差率: 1.52%\n分类模型: Vanilla LSTM 涨跌方向分类\n分类准确率: 0.4699\n分类精确率: 0.4259\n分类召回率: 0.6389\n分类F1: 0.5111\n混淆矩阵: TN=64, FP=124, FN=52, TP=92\n高频策略总收益率: -0.1508, 最大回撤: -0.1885, 年化夏普: -1.1246\n📢 未来10天预测价格：\n2026-05-07: 16.84\n2026-05-08: 16.84\n2026-05-11: 16.83\n2026-05-12: 16.80\n2026-05-13: 16.78\n2026-05-14: 16.76\n2026-05-15: 16.72\n2026-05-18: 16.68\n2026-05-19: 16.64\n2026-05-20: 16.60\n",
+    "error": null,
+    "metrics": {
+      "rmse": 0.3297,
+      "mae": 0.2789,
+      "mape": 1.5359,
+      "r2": 0.9017,
+      "accuracy": 0.4699,
+      "precision": 0.4259,
+      "recall": 0.6389,
+      "f1": 0.5111,
+      "total_return": -0.1508,
+      "max_drawdown": -0.1885,
+      "sharpe": -1.1246,
+      "confusion_matrix": {
+        "tn": 64,
+        "fp": 124,
+        "fn": 52,
+        "tp": 92
+      }
+    },
+    "stock_code": "601607.SH",
+    "stock_name": "上海医药",
+    "csv_name": "601607_SH_LSTM.csv",
+    "excel_name": "601607_SH_LSTM.xlsx",
+    "duration": 19.931127309799194,
+    "finished_at": 1778506201.983171
+  },
+  "EXP_601607.SH_20260511213040": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1778506240.373317,
+    "stdout": "",
+    "error": null,
+    "stock_code": "601607.SH",
+    "stock_name": "上海医药",
+    "stock_label": "上海医药（601607.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 24.510145902633667,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 2.421721,
+        "MAE": 2.241164,
+        "MAPE": 12.484245,
+        "R²": -4.306072
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.270545,
+        "MAE": 0.213868,
+        "MAPE": 1.17622,
+        "R²": 0.933778
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.638556,
+        "MAE": 0.556684,
+        "MAPE": 3.075309,
+        "R²": 0.631088
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.23071,
+        "MAE": 0.183348,
+        "MAPE": 1.002734,
+        "R²": 0.951843
+      }
+    ],
+    "ablation_rows": [
+      {
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.268731,
+        "MAE": 0.222783,
+        "MAPE": 1.223493,
+        "R²": 0.934663
+      },
+      {
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.203066,
+        "MAE": 0.151515,
+        "MAPE": 0.825467,
+        "R²": 0.962692
+      },
+      {
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.21283,
+        "MAE": 0.162759,
+        "MAPE": 0.884611,
+        "R²": 0.959018
+      },
+      {
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.220082,
+        "MAE": 0.168639,
+        "MAPE": 0.916264,
+        "R²": 0.956178
+      },
+      {
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.200689,
+        "MAE": 0.139244,
+        "MAPE": 0.755733,
+        "R²": 0.963561
+      }
+    ],
+    "model_csv": "EXP_601607_SH_20260511213040_model_comparison.csv",
+    "ablation_csv": "EXP_601607_SH_20260511213040_ablation_result.csv",
+    "result_files": [
+      "EXP_601607_SH_20260511213040_model_comparison.csv",
+      "EXP_601607_SH_20260511213040_ablation_result.csv"
+    ],
+    "epochs": 30,
+    "finished_at": 1778506264.8864532
+  },
+  "688235.SH_20260511213834": {
+    "job_type": "prediction",
+    "status": "finished",
+    "created_at": 1778506714.1254966,
+    "images": [
+      "688235.SH_20260511213834_0.png",
+      "688235.SH_20260511213834_1.png",
+      "688235.SH_20260511213834_2.png",
+      "688235.SH_20260511213834_3.png"
+    ],
+    "stdout": "数据截止日期: 2026-05-06 00:00:00\n模型: Vanilla LSTM 收盘价预测\nRMSE: 8.5519, MAE: 5.8868\nMAPE: 2.1515%, R2: 0.9072\n平均股价: 269.77\nMAE误差率: 2.18%\n分类模型: Vanilla LSTM 涨跌方向分类\n分类准确率: 0.5079\n分类精确率: 0.4000\n分类召回率: 0.0440\n分类F1: 0.0792\n混淆矩阵: TN=92, FP=6, FN=87, TP=4\n高频策略总收益率: 0.0000, 最大回撤: 0.0000, 年化夏普: 0.0000\n📢 未来10天预测价格：\n2026-05-07: 243.67\n2026-05-08: 243.89\n2026-05-11: 242.73\n2026-05-12: 241.80\n2026-05-13: 241.43\n2026-05-14: 241.48\n2026-05-15: 241.72\n2026-05-18: 241.98\n2026-05-19: 242.20\n2026-05-20: 242.35\n",
+    "error": null,
+    "metrics": {
+      "rmse": 8.5519,
+      "mae": 5.8868,
+      "mape": 2.1515,
+      "r2": 0.9072,
+      "accuracy": 0.5079,
+      "precision": 0.4,
+      "recall": 0.044,
+      "f1": 0.0792,
+      "total_return": 0.0,
+      "max_drawdown": 0.0,
+      "sharpe": 0.0,
+      "confusion_matrix": {
+        "tn": 92,
+        "fp": 6,
+        "fn": 87,
+        "tp": 4
+      }
+    },
+    "stock_code": "688235.SH",
+    "stock_name": "百济神州",
+    "csv_name": "688235_SH_LSTM.csv",
+    "excel_name": "688235_SH_LSTM.xlsx",
+    "duration": 12.380916833877563,
+    "finished_at": 1778506726.512393
+  },
+  "EXP_688235.SH_20260511214637": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1778507197.7372897,
+    "stdout": "",
+    "error": null,
+    "stock_code": "688235.SH",
+    "stock_name": "百济神州",
+    "stock_label": "百济神州（688235.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 21.05603837966919,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 36.712901,
+        "MAE": 30.110243,
+        "MAPE": 10.553967,
+        "R²": -0.710986
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 14.077072,
+        "MAE": 10.116952,
+        "MAPE": 3.653791,
+        "R²": 0.748445
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 27.822288,
+        "MAE": 22.989324,
+        "MAPE": 8.496399,
+        "R²": 0.017359
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 11.982462,
+        "MAE": 9.526359,
+        "MAPE": 3.417452,
+        "R²": 0.817736
+      }
+    ],
+    "ablation_rows": [
+      {
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 10.797746,
+        "MAE": 7.431639,
+        "MAPE": 2.67308,
+        "R²": 0.851995
+      },
+      {
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 9.035859,
+        "MAE": 6.568488,
+        "MAPE": 2.466379,
+        "R²": 0.896355
+      },
+      {
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 9.589266,
+        "MAE": 6.954716,
+        "MAPE": 2.608621,
+        "R²": 0.883271
+      },
+      {
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 9.489627,
+        "MAE": 7.016835,
+        "MAPE": 2.659041,
+        "R²": 0.885684
+      },
+      {
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 9.821702,
+        "MAE": 6.987221,
+        "MAPE": 2.611614,
+        "R²": 0.877543
+      }
+    ],
+    "model_csv": "EXP_688235_SH_20260511214637_model_comparison.csv",
+    "ablation_csv": "EXP_688235_SH_20260511214637_ablation_result.csv",
+    "model_prediction_images": [
+      "EXP_688235_SH_20260511214637_ARIMA_price_prediction.png",
+      "EXP_688235_SH_20260511214637_DNN_price_prediction.png",
+      "EXP_688235_SH_20260511214637_CNN_price_prediction.png",
+      "EXP_688235_SH_20260511214637_Vanilla_LSTM_price_prediction.png"
+    ],
+    "result_files": [
+      "EXP_688235_SH_20260511214637_model_comparison.csv",
+      "EXP_688235_SH_20260511214637_ablation_result.csv",
+      "EXP_688235_SH_20260511214637_ARIMA_price_prediction.png",
+      "EXP_688235_SH_20260511214637_DNN_price_prediction.png",
+      "EXP_688235_SH_20260511214637_CNN_price_prediction.png",
+      "EXP_688235_SH_20260511214637_Vanilla_LSTM_price_prediction.png"
+    ],
+    "epochs": 30,
+    "finished_at": 1778507218.7963185
+  },
+  "EXP_601607.SH_20260511214958": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1778507398.51875,
+    "stdout": "",
+    "error": null,
+    "stock_code": "601607.SH",
+    "stock_name": "上海医药",
+    "stock_label": "上海医药（601607.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 28.807790756225586,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 2.421721,
+        "MAE": 2.241164,
+        "MAPE": 12.484245,
+        "R²": -4.306072
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.28312,
+        "MAE": 0.2172,
+        "MAPE": 1.17098,
+        "R²": 0.927479
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.465107,
+        "MAE": 0.401783,
+        "MAPE": 2.205262,
+        "R²": 0.804282
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.218042,
+        "MAE": 0.16888,
+        "MAPE": 0.920345,
+        "R²": 0.956986
+      }
+    ],
+    "ablation_rows": [
+      {
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.295697,
+        "MAE": 0.244655,
+        "MAPE": 1.349827,
+        "R²": 0.920892
+      },
+      {
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.193986,
+        "MAE": 0.141673,
+        "MAPE": 0.769767,
+        "R²": 0.965954
+      },
+      {
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.199112,
+        "MAE": 0.147646,
+        "MAPE": 0.799988,
+        "R²": 0.964131
+      },
+      {
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.238322,
+        "MAE": 0.190047,
+        "MAPE": 1.036702,
+        "R²": 0.948613
+      },
+      {
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.204421,
+        "MAE": 0.142603,
+        "MAPE": 0.77313,
+        "R²": 0.962193
+      }
+    ],
+    "model_csv": "EXP_601607_SH_20260511214958_model_comparison.csv",
+    "ablation_csv": "EXP_601607_SH_20260511214958_ablation_result.csv",
+    "model_prediction_images": [
+      "EXP_601607_SH_20260511214958_ARIMA_price_prediction.png",
+      "EXP_601607_SH_20260511214958_DNN_price_prediction.png",
+      "EXP_601607_SH_20260511214958_CNN_price_prediction.png",
+      "EXP_601607_SH_20260511214958_Vanilla_LSTM_price_prediction.png"
+    ],
+    "result_files": [
+      "EXP_601607_SH_20260511214958_model_comparison.csv",
+      "EXP_601607_SH_20260511214958_ablation_result.csv",
+      "EXP_601607_SH_20260511214958_ARIMA_price_prediction.png",
+      "EXP_601607_SH_20260511214958_DNN_price_prediction.png",
+      "EXP_601607_SH_20260511214958_CNN_price_prediction.png",
+      "EXP_601607_SH_20260511214958_Vanilla_LSTM_price_prediction.png"
+    ],
+    "epochs": 30,
+    "finished_at": 1778507427.3295264
+  },
+  "EXP_600604.SH_20260511215227": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1778507547.419692,
+    "stdout": "",
+    "error": null,
+    "stock_code": "600604.SH",
+    "stock_name": "市北高新",
+    "stock_label": "市北高新（600604.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 28.64501404762268,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 0.814742,
+        "MAE": 0.646799,
+        "MAPE": 11.407578,
+        "R²": -0.794094
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.546989,
+        "MAE": 0.452184,
+        "MAPE": 8.097909,
+        "R²": 0.191346
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.569185,
+        "MAE": 0.44954,
+        "MAPE": 7.990694,
+        "R²": 0.124387
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.204827,
+        "MAE": 0.16025,
+        "MAPE": 2.954705,
+        "R²": 0.886609
+      }
+    ],
+    "ablation_rows": [
+      {
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.176685,
+        "MAE": 0.122946,
+        "MAPE": 2.284256,
+        "R²": 0.915626
+      },
+      {
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.176492,
+        "MAE": 0.121797,
+        "MAPE": 2.246315,
+        "R²": 0.915811
+      },
+      {
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.175459,
+        "MAE": 0.120288,
+        "MAPE": 2.235575,
+        "R²": 0.916793
+      },
+      {
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.205211,
+        "MAE": 0.142105,
+        "MAPE": 2.619251,
+        "R²": 0.886183
+      },
+      {
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.24252,
+        "MAE": 0.169676,
+        "MAPE": 3.110533,
+        "R²": 0.841036
+      }
+    ],
+    "model_csv": "EXP_600604_SH_20260511215227_model_comparison.csv",
+    "ablation_csv": "EXP_600604_SH_20260511215227_ablation_result.csv",
+    "model_prediction_images": [
+      "EXP_600604_SH_20260511215227_ARIMA_price_prediction.png",
+      "EXP_600604_SH_20260511215227_DNN_price_prediction.png",
+      "EXP_600604_SH_20260511215227_CNN_price_prediction.png",
+      "EXP_600604_SH_20260511215227_Vanilla_LSTM_price_prediction.png"
+    ],
+    "result_files": [
+      "EXP_600604_SH_20260511215227_model_comparison.csv",
+      "EXP_600604_SH_20260511215227_ablation_result.csv",
+      "EXP_600604_SH_20260511215227_ARIMA_price_prediction.png",
+      "EXP_600604_SH_20260511215227_DNN_price_prediction.png",
+      "EXP_600604_SH_20260511215227_CNN_price_prediction.png",
+      "EXP_600604_SH_20260511215227_Vanilla_LSTM_price_prediction.png"
+    ],
+    "epochs": 30,
+    "finished_at": 1778507576.067696
+  },
+  "EXP_600848.SH_20260511215529": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1778507729.4171703,
+    "stdout": "",
+    "error": null,
+    "stock_code": "600848.SH",
+    "stock_name": "上海临港",
+    "stock_label": "上海临港（600848.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 29.57048273086548,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 1.397202,
+        "MAE": 1.269259,
+        "MAPE": 13.021218,
+        "R²": -0.570205
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.620667,
+        "MAE": 0.457138,
+        "MAPE": 4.202024,
+        "R²": 0.690147
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.622862,
+        "MAE": 0.544036,
+        "MAPE": 5.457944,
+        "R²": 0.687951
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.484216,
+        "MAE": 0.417879,
+        "MAPE": 4.117815,
+        "R²": 0.811411
+      }
+    ],
+    "ablation_rows": [
+      {
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.402483,
+        "MAE": 0.327508,
+        "MAPE": 3.190536,
+        "R²": 0.869704
+      },
+      {
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.669474,
+        "MAE": 0.573447,
+        "MAPE": 5.548029,
+        "R²": 0.639499
+      },
+      {
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.239148,
+        "MAE": 0.173872,
+        "MAPE": 1.687047,
+        "R²": 0.953999
+      },
+      {
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.662876,
+        "MAE": 0.572799,
+        "MAPE": 5.586952,
+        "R²": 0.64657
+      },
+      {
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.360892,
+        "MAE": 0.2495,
+        "MAPE": 2.375187,
+        "R²": 0.89524
+      }
+    ],
+    "model_csv": "EXP_600848_SH_20260511215529_model_comparison.csv",
+    "ablation_csv": "EXP_600848_SH_20260511215529_ablation_result.csv",
+    "model_prediction_images": [
+      "EXP_600848_SH_20260511215529_ARIMA_price_prediction.png",
+      "EXP_600848_SH_20260511215529_DNN_price_prediction.png",
+      "EXP_600848_SH_20260511215529_CNN_price_prediction.png",
+      "EXP_600848_SH_20260511215529_Vanilla_LSTM_price_prediction.png"
+    ],
+    "result_files": [
+      "EXP_600848_SH_20260511215529_model_comparison.csv",
+      "EXP_600848_SH_20260511215529_ablation_result.csv",
+      "EXP_600848_SH_20260511215529_ARIMA_price_prediction.png",
+      "EXP_600848_SH_20260511215529_DNN_price_prediction.png",
+      "EXP_600848_SH_20260511215529_CNN_price_prediction.png",
+      "EXP_600848_SH_20260511215529_Vanilla_LSTM_price_prediction.png"
+    ],
+    "epochs": 30,
+    "finished_at": 1778507758.9916394
+  },
+  "EXP_600015.SH_20260511215752": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1778507872.7019703,
+    "stdout": "",
+    "error": null,
+    "stock_code": "600015.SH",
+    "stock_name": "华夏银行",
+    "stock_label": "华夏银行（600015.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 29.8835666179657,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 0.574328,
+        "MAE": 0.466521,
+        "MAPE": 6.168955,
+        "R²": -0.263252
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.486039,
+        "MAE": 0.443253,
+        "MAPE": 5.93417,
+        "R²": 0.095285
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.406806,
+        "MAE": 0.351407,
+        "MAPE": 4.678581,
+        "R²": 0.366211
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.155236,
+        "MAE": 0.125048,
+        "MAPE": 1.669745,
+        "R²": 0.90771
+      }
+    ],
+    "ablation_rows": [
+      {
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.146884,
+        "MAE": 0.107628,
+        "MAPE": 1.477672,
+        "R²": 0.917374
+      },
+      {
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.143589,
+        "MAE": 0.113665,
+        "MAPE": 1.529121,
+        "R²": 0.921039
+      },
+      {
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.147372,
+        "MAE": 0.103117,
+        "MAPE": 1.401538,
+        "R²": 0.916823
+      },
+      {
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.132748,
+        "MAE": 0.09586,
+        "MAPE": 1.298566,
+        "R²": 0.932512
+      },
+      {
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.182063,
+        "MAE": 0.129619,
+        "MAPE": 1.782485,
+        "R²": 0.873055
+      }
+    ],
+    "model_csv": "EXP_600015_SH_20260511215752_model_comparison.csv",
+    "ablation_csv": "EXP_600015_SH_20260511215752_ablation_result.csv",
+    "model_prediction_images": [
+      "EXP_600015_SH_20260511215752_ARIMA_price_prediction.png",
+      "EXP_600015_SH_20260511215752_DNN_price_prediction.png",
+      "EXP_600015_SH_20260511215752_CNN_price_prediction.png",
+      "EXP_600015_SH_20260511215752_Vanilla_LSTM_price_prediction.png"
+    ],
+    "result_files": [
+      "EXP_600015_SH_20260511215752_model_comparison.csv",
+      "EXP_600015_SH_20260511215752_ablation_result.csv",
+      "EXP_600015_SH_20260511215752_ARIMA_price_prediction.png",
+      "EXP_600015_SH_20260511215752_DNN_price_prediction.png",
+      "EXP_600015_SH_20260511215752_CNN_price_prediction.png",
+      "EXP_600015_SH_20260511215752_Vanilla_LSTM_price_prediction.png"
+    ],
+    "epochs": 30,
+    "finished_at": 1778507902.589518
+  },
+  "EXP_600015.SH_20260511221031": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1778508631.9468255,
+    "stdout": "",
+    "error": null,
+    "stock_code": "600015.SH",
+    "stock_name": "华夏银行",
+    "stock_label": "华夏银行（600015.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 28.952393054962158,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 0.574328,
+        "MAE": 0.466521,
+        "MAPE": 6.168955,
+        "R²": -0.263252
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.438903,
+        "MAE": 0.386021,
+        "MAPE": 5.123951,
+        "R²": 0.262254
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.306955,
+        "MAE": 0.250778,
+        "MAPE": 3.411269,
+        "R²": 0.639156
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.1196,
+        "MAE": 0.086424,
+        "MAPE": 1.178562,
+        "R²": 0.945219
+      }
+    ],
+    "ablation_rows": [
+      {
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.148371,
+        "MAE": 0.109935,
+        "MAPE": 1.508355,
+        "R²": 0.915692
+      },
+      {
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.149372,
+        "MAE": 0.115999,
+        "MAPE": 1.56227,
+        "R²": 0.91455
+      },
+      {
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.220952,
+        "MAE": 0.189139,
+        "MAPE": 2.520202,
+        "R²": 0.813032
+      },
+      {
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.142507,
+        "MAE": 0.101609,
+        "MAPE": 1.382844,
+        "R²": 0.922225
+      },
+      {
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.152256,
+        "MAE": 0.108332,
+        "MAPE": 1.47589,
+        "R²": 0.911219
+      }
+    ],
+    "model_csv": "EXP_600015_SH_20260511221031_model_comparison.csv",
+    "ablation_csv": "EXP_600015_SH_20260511221031_ablation_result.csv",
+    "model_prediction_images": [
+      "EXP_600015_SH_20260511221031_ARIMA_price_prediction.png",
+      "EXP_600015_SH_20260511221031_DNN_price_prediction.png",
+      "EXP_600015_SH_20260511221031_CNN_price_prediction.png",
+      "EXP_600015_SH_20260511221031_Vanilla_LSTM_price_prediction.png"
+    ],
+    "result_files": [
+      "EXP_600015_SH_20260511221031_model_comparison.csv",
+      "EXP_600015_SH_20260511221031_ablation_result.csv",
+      "EXP_600015_SH_20260511221031_ARIMA_price_prediction.png",
+      "EXP_600015_SH_20260511221031_DNN_price_prediction.png",
+      "EXP_600015_SH_20260511221031_CNN_price_prediction.png",
+      "EXP_600015_SH_20260511221031_Vanilla_LSTM_price_prediction.png"
+    ],
+    "epochs": 30,
+    "finished_at": 1778508660.9022124
+  },
+  "600016.SH_20260511221514": {
+    "job_type": "prediction",
+    "status": "finished",
+    "created_at": 1778508914.4766614,
+    "images": [
+      "600016.SH_20260511221514_0.png",
+      "600016.SH_20260511221514_1.png",
+      "600016.SH_20260511221514_2.png"
+    ],
+    "stdout": "数据截止日期: 2026-05-06 00:00:00\n模型: Vanilla LSTM 收盘价预测\nRMSE: 0.0872, MAE: 0.0627\nMAPE: 1.4414%, R2: 0.9540\n平均股价: 4.18\nMAE误差率: 1.50%\n信号模型: Enhanced Vanilla LSTM 涨跌概率\n方向命中率: 0.5934\n平均上涨概率: 0.2693\n模型看涨比例: 0.0120\n交易信号命中率: 0.0000\n买入信号次数: 0\n高频策略总收益率: 0.0000, 最大回撤: 0.0000, 年化夏普: 0.0000\n期末资产: 100000.00, 交易次数: 0, 胜率: 0.0000, 平均仓位: 0.0000, 累计交易成本: 0.00\n📢 未来10天预测价格：\n2026-05-07: 3.76\n2026-05-08: 3.76\n2026-05-11: 3.77\n2026-05-12: 3.77\n2026-05-13: 3.78\n2026-05-14: 3.78\n2026-05-15: 3.78\n2026-05-18: 3.78\n2026-05-19: 3.78\n2026-05-20: 3.78\n",
+    "error": null,
+    "metrics": {
+      "rmse": 0.0872,
+      "mae": 0.0627,
+      "mape": 1.4414,
+      "r2": 0.954,
+      "direction_accuracy": 0.5934,
+      "avg_up_probability": 0.2693,
+      "positive_rate": 0.012,
+      "signal_hit_rate": 0.0,
+      "total_return": 0.0,
+      "max_drawdown": 0.0,
+      "sharpe": 0.0,
+      "final_capital": 100000.0,
+      "win_rate": 0.0,
+      "exposure": 0.0,
+      "fees_paid": 0.0,
+      "signal_count": 0,
+      "trade_count": 0
+    },
+    "stock_code": "600016.SH",
+    "stock_name": "民生银行",
+    "csv_name": "600016_SH_LSTM.csv",
+    "excel_name": "600016_SH_LSTM.xlsx",
+    "duration": 68.227303981781,
+    "finished_at": 1778508982.7119422
+  },
+  "600519.SH_20260511221639": {
+    "job_type": "prediction",
+    "status": "running",
+    "created_at": 1778508999.8387313,
+    "images": [],
+    "stdout": "",
+    "error": null,
+    "metrics": {},
+    "stock_code": "600519.SH",
+    "stock_name": "贵州茅台",
+    "csv_name": "600519_SH_LSTM.csv",
+    "excel_name": "600519_SH_LSTM.xlsx",
+    "duration": null
   }
 }

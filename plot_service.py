@@ -4,14 +4,12 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import auc, roc_curve
 
 
 COLOR_REG_TRAIN = "#2563eb"
 COLOR_REG_TEST = "#16a34a"
 COLOR_DIR_TRAIN = "#dc2626"
 COLOR_DIR_TEST = "#9333ea"
-COLOR_MUTED = "#6b7280"
 
 
 def with_stock_title(title, stock_label=None):
@@ -52,55 +50,32 @@ def plot_loss_curves(reg_loss_history, reg_test_loss_history, dir_loss_history, 
         linestyle="--",
     )
     plt.xlabel("Epoch")
-    plt.ylabel("CrossEntropy Loss")
+    plt.ylabel("BCE Loss")
     plt.legend()
     plt.grid(True, linestyle="--", alpha=0.5)
 
     plt.tight_layout()
     plt.show()
 
-def plot_price_prediction(dates, real_price, pred_price, stock_label=None):
+def plot_price_prediction(dates, real_price, pred_price, stock_label=None, model_name=None, output_path=None):
     plt.figure(figsize=(14, 5))
     plt.plot(dates, real_price, label="真实收盘价")
     plt.plot(dates, pred_price, label="预测收盘价", linestyle="--")
-    plt.title(with_stock_title("收盘价预测", stock_label))
+    title = f"{model_name} 收盘价预测" if model_name else "收盘价预测"
+    plt.title(with_stock_title(title, stock_label))
     plt.xlabel("时间")
     plt.ylabel("价格（元）")
     plt.legend()
     plt.grid(True, linestyle="--", alpha=0.5)
     plt.tight_layout()
-    plt.show()
-
-
-def plot_roc_curve(dir_reals, probabilities, stock_label=None):
-    plt.figure(figsize=(8, 6))
-    if len(np.unique(dir_reals)) >= 2:
-        fpr, tpr, _ = roc_curve(dir_reals, probabilities)
-        roc_auc = auc(fpr, tpr)
-        plt.plot(fpr, tpr, color=COLOR_REG_TRAIN, lw=2, label=f"ROC曲线 (AUC = {roc_auc:.4f})")
-        plt.plot([0, 1], [0, 1], color=COLOR_MUTED, lw=1.5, linestyle="--", label="随机猜测")
-        plt.xlabel("假阳性率 FPR")
-        plt.ylabel("真正率 TPR")
-        plt.legend(loc="lower right")
+    if output_path:
+        try:
+            plt.savefig(output_path, bbox_inches="tight")
+        except Exception:
+            plt.savefig(output_path)
+        plt.close()
     else:
-        only_class = int(dir_reals[0]) if len(dir_reals) else "N/A"
-        plt.text(
-            0.5,
-            0.5,
-            f"测试集仅包含单一类别：{only_class}\n无法计算 ROC 曲线",
-            ha="center",
-            va="center",
-            fontsize=14,
-        )
-        plt.xlim(0, 1)
-        plt.ylim(0, 1)
-        plt.xlabel("假阳性率 FPR")
-        plt.ylabel("真正率 TPR")
-
-    plt.title(with_stock_title("Vanilla LSTM 涨跌方向分类 ROC 曲线", stock_label))
-    plt.grid(True, linestyle="--", alpha=0.5)
-    plt.tight_layout()
-    plt.show()
+        plt.show()
 
 
 def plot_high_frequency_backtest(dates_bt, cumulative_return, buy_hold, max_dd_idx, stock_label=None):
