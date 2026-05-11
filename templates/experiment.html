@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>实验结果{% if stock_label %} - {{ stock_label }}{% endif %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      body { background: #f8fafc; }
+      .card { border-radius: 12px; box-shadow: 0 6px 18px rgba(22,28,45,0.06); }
+      .small-muted { color:#6b7280; font-size:0.9rem; }
+      footer { margin-top:30px; color:#9ca3af; font-size:0.9rem; }
+      th, td { white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <div class="container py-4">
+      <a href="/" class="btn btn-link">&larr; 返回首页</a>
+
+      <div class="card p-3 mb-3">
+        <h4>实验结果{% if stock_label %} - {{ stock_label }}{% endif %}</h4>
+        <p class="small-muted mb-0">
+          区间：{{ start_date }} 至 {{ end_date }}
+          {% if epochs %}　训练轮数：{{ epochs }}{% endif %}
+        </p>
+      </div>
+
+      {% if error %}
+        <div class="alert alert-danger">实验运行失败：{{ error }}</div>
+      {% endif %}
+
+      <div class="card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+          <h5 class="mb-0">模型对比实验</h5>
+          {% if model_csv %}
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('result_file', fname=model_csv) }}">下载模型对比 CSV</a>
+          {% endif %}
+        </div>
+        {% if model_rows %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle text-center">
+              <thead>
+                <tr>
+                  {% for key in model_rows[0].keys() %}
+                    <th>{{ key }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in model_rows %}
+                  <tr>
+                    {% for value in row.values() %}
+                      <td>{{ value }}</td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="small-muted">暂无模型对比结果。</div>
+        {% endif %}
+      </div>
+
+      <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+          <h5 class="mb-0">特征消融实验</h5>
+          {% if ablation_csv %}
+            <a class="btn btn-outline-success btn-sm" href="{{ url_for('result_file', fname=ablation_csv) }}">下载消融实验 CSV</a>
+          {% endif %}
+        </div>
+        {% if ablation_rows %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle text-center">
+              <thead>
+                <tr>
+                  {% for key in ablation_rows[0].keys() %}
+                    <th>{{ key }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in ablation_rows %}
+                  <tr>
+                    {% for value in row.values() %}
+                      <td>{{ value }}</td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="small-muted">暂无特征消融结果。</div>
+        {% endif %}
+      </div>
+
+      <footer class="text-center">
+        <div>模型对比、特征消融与回测指标导出</div>
+      </footer>
+    </div>
+  </body>
+</html>

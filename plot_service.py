@@ -1,3 +1,4 @@
+#绘图服务：生成 K 线、预测曲线、回测曲线图片。
 import matplotlib
 
 matplotlib.use("Agg")
@@ -57,7 +58,7 @@ def plot_loss_curves(reg_loss_history, reg_test_loss_history, dir_loss_history, 
     plt.tight_layout()
     plt.show()
 
-
+#thresholds
 def plot_roc_curve(dir_reals, probabilities, stock_label=None):
     plt.figure(figsize=(8, 6))
     if len(np.unique(dir_reals)) >= 2:

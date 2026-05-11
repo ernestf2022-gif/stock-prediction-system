@@ -72,6 +72,9 @@
 
               <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary btn-lg">开始预测</button>
+                <button type="submit" class="btn btn-outline-primary btn-lg" formaction="/experiment">
+                  运行对比实验 / 消融实验
+                </button>
               </div>
             </form>
 
@@ -118,7 +121,7 @@
                         <div class="small-muted">提交：{{ meta.created_at_human }}</div>
                       </div>
                       <div class="d-flex gap-2 flex-wrap justify-content-end">
-                        <a href="/job/{{ jobid }}" class="btn btn-outline-secondary btn-sm">查看</a>
+                        <a href="/job/{{ jobid }}" class="btn btn-outline-secondary btn-sm view-job-link">查看</a>
                         {% if meta.status == 'finished' and meta.csv_name %}
                           <a href="{{ url_for('download_csv', fname=meta.csv_name) }}" class="btn btn-outline-primary btn-sm">下载 CSV</a>
                         {% endif %}
@@ -136,6 +139,33 @@
             </div>
           </div>
           <script>
+            const recentJobsScrollKey = "stockProject.recentJobs.scrollTop";
+            const jobsList = document.getElementById('jobsList');
+
+            function saveRecentJobsScroll() {
+              if (jobsList) {
+                sessionStorage.setItem(recentJobsScrollKey, String(jobsList.scrollTop));
+              }
+            }
+
+            function restoreRecentJobsScroll() {
+              if (!jobsList) return;
+              const savedTop = Number(sessionStorage.getItem(recentJobsScrollKey) || 0);
+              requestAnimationFrame(() => {
+                jobsList.scrollTop = savedTop;
+              });
+            }
+
+            if (jobsList) {
+              jobsList.addEventListener('scroll', saveRecentJobsScroll, { passive: true });
+              window.addEventListener('pageshow', restoreRecentJobsScroll);
+              restoreRecentJobsScroll();
+            }
+
+            document.querySelectorAll('.view-job-link').forEach(link => {
+              link.addEventListener('click', saveRecentJobsScroll);
+            });
+
             document.querySelectorAll('.delete-job-btn').forEach(button => {
               button.addEventListener('click', function(){
                 const jobid = this.dataset.jobid;

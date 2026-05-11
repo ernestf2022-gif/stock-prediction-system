@@ -1,3 +1,4 @@
+#模型服务：训练、预测、输出结果。
 import numpy as np
 import pandas as pd
 import torch
@@ -61,6 +62,19 @@ class AttentionLSTM(nn.Module):
         weights = torch.softmax(self.attn(out), dim=1)
         context = (weights * out).sum(dim=1)
         return self.fc(context)
+
+
+class VanillaLSTM(nn.Module):
+    """普通 LSTM：用于和 Attention-LSTM 做对比/消融实验。"""
+
+    def __init__(self, input_size, hidden_size=64):
+        super().__init__()
+        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
+        self.fc = nn.Linear(hidden_size, 1)
+
+    def forward(self, x):
+        out, _ = self.lstm(x)
+        return self.fc(out[:, -1, :])
 
 
 class LSTMDirection(nn.Module):

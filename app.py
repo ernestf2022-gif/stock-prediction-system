@@ -1,8 +1,24 @@
+# =====================================================
+# 基于机器学习的股票交易数据分析与预测系统
+# =====================================================
+# 系统功能：
+# 1. 股票数据获取
+# 2. 数据清洗与特征工程
+# 3. 模型训练
+# 4. 股票涨跌预测
+# 5. 量化回测分析
+# 6. Web可视化展示
+# 系统目前已经能够完成：
+# 从股票数据获取到预测结果展示的完整流程
+# =====================================================
+
+#系统入口，Flask Web 服务，负责路由、页面跳转、接口调用。
 import os
 
 from flask import Flask, abort, jsonify, redirect, render_template, request, send_from_directory, url_for
 
 from config import APP_VERSION, CSV_DIR, END_DATE, EXCEL_DIR, RESULT_DIR, START_DATE, STOCK_CODE
+from experiment_service import run_experiments
 from job_service import (
     clear_all_jobs_and_files,
     create_job,
@@ -15,6 +31,23 @@ from job_service import (
 
 
 app = Flask(__name__)
+
+
+def read_stock_params():
+    if request.form:
+        stock_code = request.form.get("stock_code")
+        start_date = request.form.get("start_date")
+        end_date = request.form.get("end_date")
+    else:
+        payload = request.get_json() or {}
+        stock_code = payload.get("stock_code")
+        start_date = payload.get("start_date")
+        end_date = payload.get("end_date")
+
+    if not stock_code or not start_date or not end_date:
+        return None, None, None
+
+    return stock_code.strip().upper(), start_date.strip(), end_date.strip()
 
 
 @app.route("/", methods=["GET"])
@@ -43,25 +76,37 @@ def index():
 
 @app.route("/run", methods=["POST"])
 def run_route():
-    if request.form:
-        stock_code = request.form.get("stock_code")
-        start_date = request.form.get("start_date")
-        end_date = request.form.get("end_date")
-    else:
-        payload = request.get_json() or {}
-        stock_code = payload.get("stock_code")
-        start_date = payload.get("start_date")
-        end_date = payload.get("end_date")
+    stock_code, start_date, end_date = read_stock_params()
 
     if not stock_code or not start_date or not end_date:
         return "参数不完整", 400
 
-    stock_code = stock_code.strip().upper()
-    start_date = start_date.strip()
-    end_date = end_date.strip()
-
     jobid = create_job(stock_code, start_date, end_date)
     return redirect(url_for("job_page", jobid=jobid))
+
+
+@app.route("/experiment", methods=["POST"])
+def experiment_route():
+    stock_code, start_date, end_date = read_stock_params()
+    if not stock_code or not start_date or not end_date:
+        return "参数不完整", 400
+
+    try:
+        context = run_experiments(stock_code, start_date, end_date)
+    except Exception as exc:
+        return render_template(
+            "experiment.html",
+            error=str(exc),
+            stock_code=stock_code,
+            stock_label=stock_code,
+            start_date=start_date,
+            end_date=end_date,
+            model_rows=[],
+            ablation_rows=[],
+            app_version=APP_VERSION,
+        ), 500
+
+    return render_template("experiment.html", **context, app_version=APP_VERSION)
 
 
 @app.route("/job/<jobid>", methods=["GET"])

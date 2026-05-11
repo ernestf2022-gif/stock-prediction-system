@@ -1,5 +1,8 @@
+#数据服务：爬取 / 读取股票数据、清洗、格式化。
+from contextlib import contextmanager
 import json
 import os
+import threading
 import time
 
 import numpy as np
@@ -19,6 +22,7 @@ OUTPUT_COLUMNS = [
     "昨收价", "涨跌额", "成交额(千元)", "MA5", "MA10", "MACD", "RSI",
     "VOLATILITY", "大盘指数", "RET", "LOG_RET", "INDEX_RET"
 ]
+#系统对常用股票进行了本地预缓存，提高查询效率；对于未缓存股票，再通过 Tushare 接口动态获取，并写入本地缓存文件，减少重复请求。
 STOCK_NAME_CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stock_names_cache.json")
 COMMON_STOCK_NAMES = {
     "000001.SZ": "平安银行",
@@ -39,6 +43,37 @@ COMMON_STOCK_NAMES = {
     "688981.SH": "中芯国际",
 }
 _stock_name_cache = None
+_proxy_env_lock = threading.RLock()
+PROXY_ENV_KEYS = (
+    "HTTP_PROXY",
+    "HTTPS_PROXY",
+    "ALL_PROXY",
+    "FTP_PROXY",
+    "http_proxy",
+    "https_proxy",
+    "all_proxy",
+    "ftp_proxy",
+    "NO_PROXY",
+    "no_proxy",
+)
+
+
+@contextmanager
+def tushare_no_proxy_env():
+    with _proxy_env_lock:
+        old_env = {key: os.environ.get(key) for key in PROXY_ENV_KEYS}
+        try:
+            for key in PROXY_ENV_KEYS:
+                os.environ.pop(key, None)
+            os.environ["NO_PROXY"] = "*"
+            os.environ["no_proxy"] = "*"
+            yield
+        finally:
+            for key, value in old_env.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
 
 
 def normalize_stock_code(stock_code):
@@ -82,27 +117,29 @@ def save_stock_name_cache(cache):
 
 
 def fetch_stock_name_map(token=TS_TOKEN):
-    ts.set_token(token)
-    pro = ts.pro_api()
     stock_names = {}
 
-    for list_status in ("L", "P", "D"):
-        try:
-            stock_df = pro.stock_basic(exchange="", list_status=list_status, fields="ts_code,name")
-        except Exception as exc:
-            print(f"股票基础信息获取失败：list_status={list_status}, {exc}")
-            continue
+    with tushare_no_proxy_env():
+        ts.set_token(token)
+        pro = ts.pro_api()
 
-        if stock_df is None or stock_df.empty:
-            continue
-        if set(STOCK_BASIC_REQUIRED_COLS) - set(stock_df.columns):
-            continue
+        for list_status in ("L", "P", "D"):
+            try:
+                stock_df = pro.stock_basic(exchange="", list_status=list_status, fields="ts_code,name")
+            except Exception as exc:
+                print(f"股票基础信息获取失败：list_status={list_status}, {exc}")
+                continue
 
-        for _, row in stock_df[STOCK_BASIC_REQUIRED_COLS].iterrows():
-            code = normalize_stock_code(row.get("ts_code"))
-            name = str(row.get("name", "")).strip()
-            if code and name:
-                stock_names[code] = name
+            if stock_df is None or stock_df.empty:
+                continue
+            if set(STOCK_BASIC_REQUIRED_COLS) - set(stock_df.columns):
+                continue
+
+            for _, row in stock_df[STOCK_BASIC_REQUIRED_COLS].iterrows():
+                code = normalize_stock_code(row.get("ts_code"))
+                name = str(row.get("name", "")).strip()
+                if code and name:
+                    stock_names[code] = name
 
     return stock_names
 
@@ -153,7 +190,8 @@ def fetch_tushare_data(fetch_func, dataset_name, required_cols, max_retries=3, *
     last_error = None
     for attempt in range(1, max_retries + 1):
         try:
-            result = fetch_func(**kwargs)
+            with tushare_no_proxy_env():
+                result = fetch_func(**kwargs)
             if result is not None and not result.empty:
                 missing_cols = set(required_cols) - set(result.columns)
                 if not missing_cols:
@@ -202,8 +240,9 @@ def fetch_tushare_data_with_enddate_fallback(
 
 
 def fetch_market_data(stock_code, start_date, end_date, token=TS_TOKEN):
-    ts.set_token(token)
-    pro = ts.pro_api()
+    with tushare_no_proxy_env():
+        ts.set_token(token)
+        pro = ts.pro_api()
 
     start_date = normalize_trade_date(start_date)
     end_date = normalize_trade_date(end_date)
