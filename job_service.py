@@ -11,6 +11,7 @@ import traceback
 
 from config import BASE_DIR, CSV_DIR, EXCEL_DIR, RESULT_DIR, ensure_directories
 from data_service import format_stock_label, resolve_stock_name
+from experiment_service import run_experiments
 from model_service import run_pipeline
 from plot_service import plt
 
@@ -119,6 +120,9 @@ def get_download_names(meta):
     if excel_name:
         excel_names.add(excel_name)
 
+    if meta.get("job_type") == "experiment":
+        return csv_names, excel_names
+
     stock_code = meta.get("stock_code")
     if stock_code:
         real_csv_name, real_excel_name = expected_output_names(stock_code)
@@ -130,6 +134,10 @@ def get_download_names(meta):
 
 def remove_job_output_files(jobid, meta, remaining_csv_names=None, remaining_excel_names=None, remove_downloads=True):
     result_names = set(meta.get("images") or [])
+    result_names.update(meta.get("result_files") or [])
+    for filename in (meta.get("model_csv"), meta.get("ablation_csv")):
+        if filename:
+            result_names.add(filename)
     if jobid:
         try:
             for filename in os.listdir(RESULT_DIR):
@@ -260,6 +268,9 @@ def expected_output_names(stock_code):
 
 def attach_download_names(meta):
     meta = meta.copy()
+    if meta.get("job_type") == "experiment":
+        return meta
+
     stock_code = meta.get("stock_code")
     if not stock_code:
         return meta
@@ -282,6 +293,8 @@ def attach_display_fields(meta):
     stock_name = meta.get("stock_name") or resolve_stock_name(stock_code, allow_remote=False)
     meta["stock_name"] = stock_name
     meta["stock_label"] = format_stock_label(stock_code, stock_name)
+    meta["job_type"] = meta.get("job_type", "prediction")
+    meta["task_label"] = "实验任务" if meta["job_type"] == "experiment" else "预测任务"
     return meta
 
 
@@ -307,7 +320,11 @@ def get_latest_finished_summary():
     latest_images_stock_label = None
 
     with jobs_lock:
-        finished = [(jid, meta) for jid, meta in jobs.items() if meta.get("status") == "finished"]
+        finished = [
+            (jid, meta)
+            for jid, meta in jobs.items()
+            if meta.get("status") == "finished" and meta.get("job_type", "prediction") == "prediction"
+        ]
         if finished:
             finished_sorted = sorted(finished, key=lambda item: item[1].get("finished_at", 0), reverse=True)
             _, meta = finished_sorted[0]
@@ -317,7 +334,11 @@ def get_latest_finished_summary():
             latest_stock_label = meta.get("stock_label")
 
         finished_with_imgs = [
-            (jid, meta) for jid, meta in jobs.items() if meta.get("status") == "finished" and meta.get("images")
+            (jid, meta)
+            for jid, meta in jobs.items()
+            if meta.get("status") == "finished"
+            and meta.get("job_type", "prediction") == "prediction"
+            and meta.get("images")
         ]
         if finished_with_imgs:
             finished_imgs_sorted = sorted(
@@ -340,6 +361,7 @@ def create_job(stock_code, start_date, end_date):
 
     with jobs_lock:
         jobs[jobid] = {
+            "job_type": "prediction",
             "status": "running",
             "created_at": time.time(),
             "images": [],
@@ -363,6 +385,83 @@ def create_job(stock_code, start_date, end_date):
     return jobid
 
 
+def run_experiment_capture(stock_code, start_date, end_date, jobid):
+    old_stdout = sys.stdout
+    sio = io.StringIO()
+    sys.stdout = sio
+    start_time = time.time()
+
+    try:
+        result = run_experiments(
+            stock_code=stock_code,
+            start_date=start_date,
+            end_date=end_date,
+            output_prefix=jobid,
+        )
+        stdout_text = sio.getvalue()
+        duration = time.time() - start_time
+
+        with jobs_lock:
+            meta = jobs.get(jobid)
+            if meta is not None:
+                meta.update(result)
+                meta["stdout"] = stdout_text
+                meta["finished_at"] = time.time()
+                meta["duration"] = duration
+                meta["result_files"] = [result.get("model_csv"), result.get("ablation_csv")]
+                meta["status"] = "finished"
+                save_jobs_unlocked()
+            else:
+                remove_job_output_files(jobid, result)
+    except Exception:
+        error_text = traceback.format_exc()
+        stdout_text = sio.getvalue()
+        with jobs_lock:
+            meta = jobs.get(jobid)
+            if meta is not None:
+                meta["status"] = "error"
+                meta["error"] = error_text
+                meta["stdout"] = stdout_text
+                save_jobs_unlocked()
+    finally:
+        sys.stdout = old_stdout
+
+
+def create_experiment_job(stock_code, start_date, end_date):
+    timestamp = time.strftime("%Y%m%d%H%M%S")
+    jobid = f"EXP_{stock_code}_{timestamp}"
+    stock_name = resolve_stock_name(stock_code, allow_remote=False)
+
+    with jobs_lock:
+        jobs[jobid] = {
+            "job_type": "experiment",
+            "status": "running",
+            "created_at": time.time(),
+            "stdout": "",
+            "error": None,
+            "stock_code": stock_code,
+            "stock_name": stock_name,
+            "stock_label": format_stock_label(stock_code, stock_name),
+            "start_date": start_date,
+            "end_date": end_date,
+            "duration": None,
+            "model_rows": [],
+            "ablation_rows": [],
+            "model_csv": None,
+            "ablation_csv": None,
+            "result_files": [],
+        }
+        save_jobs_unlocked()
+
+    thread = threading.Thread(
+        target=run_experiment_capture,
+        args=(stock_code, start_date, end_date, jobid),
+        daemon=True,
+    )
+    thread.start()
+    return jobid
+
+
 def format_metric(value):
     return f"{value:.4f}" if value is not None else "N/A"
 
@@ -373,6 +472,9 @@ def get_job_page_context(jobid):
         if not meta:
             return None
         meta_copy = meta.copy()
+
+    if meta_copy.get("job_type") == "experiment":
+        return None
 
     meta_copy = attach_display_fields(meta_copy)
     stdout_full = meta_copy.get("stdout", "") or ""
@@ -406,6 +508,38 @@ def get_job_page_context(jobid):
         "excel_name": meta_copy.get("excel_name"),
         "duration": int(meta_copy.get("duration")) if meta_copy.get("duration") else None,
         "trade_cycles": meta_copy.get("trade_cycles", []),
+    }
+
+
+def get_experiment_page_context(jobid):
+    with jobs_lock:
+        meta = jobs.get(jobid)
+        if not meta:
+            return None
+        meta_copy = meta.copy()
+
+    if meta_copy.get("job_type") != "experiment":
+        return None
+
+    meta_copy = attach_display_fields(meta_copy)
+    stdout_full = meta_copy.get("stdout", "") or ""
+    snippet = stdout_full if len(stdout_full) <= 1200 else (stdout_full[:800] + "\n...\n" + stdout_full[-400:])
+
+    return {
+        "jobid": jobid,
+        "status": meta_copy.get("status", "running"),
+        "error": meta_copy.get("error"),
+        "stdout_snippet": snippet,
+        "stock_code": meta_copy.get("stock_code"),
+        "stock_label": meta_copy.get("stock_label"),
+        "start_date": meta_copy.get("start_date"),
+        "end_date": meta_copy.get("end_date"),
+        "epochs": meta_copy.get("epochs"),
+        "duration": int(meta_copy.get("duration")) if meta_copy.get("duration") else None,
+        "model_rows": meta_copy.get("model_rows", []),
+        "ablation_rows": meta_copy.get("ablation_rows", []),
+        "model_csv": meta_copy.get("model_csv"),
+        "ablation_csv": meta_copy.get("ablation_csv"),
     }
 
 

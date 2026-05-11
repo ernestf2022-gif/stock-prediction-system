@@ -20,15 +20,32 @@
       <div class="card p-3 mb-3">
         <h4>实验结果{% if stock_label %} - {{ stock_label }}{% endif %}</h4>
         <p class="small-muted mb-0">
+          {% if jobid %}任务：<code>{{ jobid }}</code>　状态：<strong id="status">{{ status }}</strong><br>{% endif %}
           区间：{{ start_date }} 至 {{ end_date }}
           {% if epochs %}　训练轮数：{{ epochs }}{% endif %}
+          {% if duration %}　运行时长：{{ duration }} 秒{% endif %}
         </p>
       </div>
 
-      {% if error %}
+      {% if status == 'running' %}
+        <div class="card p-4 mb-3 text-center">
+          <div class="d-flex justify-content-center mb-3">
+            <div class="spinner-border text-primary" role="status" aria-label="实验运行中"></div>
+          </div>
+          <h5>实验正在后台运行</h5>
+          <p class="small-muted mb-0">模型对比和特征消融会依次训练并导出 CSV，页面会自动刷新显示结果。</p>
+        </div>
+      {% elif status == 'error' %}
         <div class="alert alert-danger">实验运行失败：{{ error }}</div>
+        {% if stdout_snippet %}
+          <div class="card p-3 mb-3">
+            <h5>输出日志（部分）</h5>
+            <pre>{{ stdout_snippet }}</pre>
+          </div>
+        {% endif %}
       {% endif %}
 
+      {% if status == 'finished' %}
       <div class="card p-3 mb-3">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
           <h5 class="mb-0">模型对比实验</h5>
@@ -94,10 +111,32 @@
           <div class="small-muted">暂无特征消融结果。</div>
         {% endif %}
       </div>
+      {% endif %}
 
       <footer class="text-center">
         <div>模型对比、特征消融与回测指标导出</div>
       </footer>
     </div>
+    <script>
+      const jobid = "{{ jobid|default('', true) }}";
+      function pollExperiment() {
+        if (!jobid) return;
+        fetch("/status/" + encodeURIComponent(jobid))
+          .then(r => r.json())
+          .then(data => {
+            const statusNode = document.getElementById("status");
+            if (statusNode) statusNode.innerText = data.status;
+            if (data.status === "finished" || data.status === "error") {
+              location.reload();
+            } else {
+              setTimeout(pollExperiment, 3000);
+            }
+          })
+          .catch(() => setTimeout(pollExperiment, 3000));
+      }
+      {% if status == 'running' %}
+        setTimeout(pollExperiment, 2000);
+      {% endif %}
+    </script>
   </body>
 </html>

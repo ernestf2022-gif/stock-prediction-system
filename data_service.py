@@ -1,5 +1,5 @@
 #数据服务：爬取 / 读取股票数据、清洗、格式化。
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 import json
 import os
 import threading
@@ -7,6 +7,7 @@ import time
 
 import numpy as np
 import pandas as pd
+import requests
 import tushare as ts
 
 from config import CSV_DIR, EXCEL_DIR, INDEX_CODE, TS_TOKEN, ensure_directories
@@ -55,6 +56,8 @@ PROXY_ENV_KEYS = (
     "ftp_proxy",
     "NO_PROXY",
     "no_proxy",
+    "REQUESTS_CA_BUNDLE",
+    "CURL_CA_BUNDLE",
 )
 
 
@@ -62,18 +65,43 @@ PROXY_ENV_KEYS = (
 def tushare_no_proxy_env():
     with _proxy_env_lock:
         old_env = {key: os.environ.get(key) for key in PROXY_ENV_KEYS}
+        original_merge_environment_settings = requests.sessions.Session.merge_environment_settings
+
+        def merge_environment_settings_without_proxy(self, url, proxies, stream, verify, cert):
+            settings = original_merge_environment_settings(self, url, proxies, stream, verify, cert)
+            settings["proxies"] = {}
+            return settings
+
         try:
             for key in PROXY_ENV_KEYS:
                 os.environ.pop(key, None)
             os.environ["NO_PROXY"] = "*"
             os.environ["no_proxy"] = "*"
+            requests.sessions.Session.merge_environment_settings = merge_environment_settings_without_proxy
             yield
         finally:
+            requests.sessions.Session.merge_environment_settings = original_merge_environment_settings
             for key, value in old_env.items():
                 if value is None:
                     os.environ.pop(key, None)
                 else:
                     os.environ[key] = value
+
+
+def has_proxy_env():
+    return any(os.environ.get(key) for key in PROXY_ENV_KEYS if "PROXY" in key.upper())
+
+
+def tushare_request_modes():
+    # 先尊重用户当前代理环境；失败时再进入强制无代理模式兜底。
+    modes = [(False, "系统网络/代理")]
+    if has_proxy_env():
+        modes.append((True, "禁用代理"))
+    return modes
+
+
+def tushare_request_context(disable_proxy):
+    return tushare_no_proxy_env() if disable_proxy else nullcontext()
 
 
 def normalize_stock_code(stock_code):
@@ -119,27 +147,36 @@ def save_stock_name_cache(cache):
 def fetch_stock_name_map(token=TS_TOKEN):
     stock_names = {}
 
-    with tushare_no_proxy_env():
-        ts.set_token(token)
-        pro = ts.pro_api()
+    ts.set_token(token)
+    pro = ts.pro_api()
 
-        for list_status in ("L", "P", "D"):
+    for list_status in ("L", "P", "D"):
+        stock_df = None
+        last_error = None
+        for disable_proxy, mode_name in tushare_request_modes():
             try:
-                stock_df = pro.stock_basic(exchange="", list_status=list_status, fields="ts_code,name")
+                with tushare_request_context(disable_proxy):
+                    stock_df = pro.stock_basic(exchange="", list_status=list_status, fields="ts_code,name")
+                break
             except Exception as exc:
-                print(f"股票基础信息获取失败：list_status={list_status}, {exc}")
-                continue
+                last_error = exc
+                print(f"股票基础信息获取失败：list_status={list_status}，{mode_name}，{exc}")
 
-            if stock_df is None or stock_df.empty:
-                continue
-            if set(STOCK_BASIC_REQUIRED_COLS) - set(stock_df.columns):
-                continue
+        if stock_df is None:
+            if last_error:
+                print(f"股票基础信息最终获取失败：list_status={list_status}，{last_error}")
+            continue
 
-            for _, row in stock_df[STOCK_BASIC_REQUIRED_COLS].iterrows():
-                code = normalize_stock_code(row.get("ts_code"))
-                name = str(row.get("name", "")).strip()
-                if code and name:
-                    stock_names[code] = name
+        if stock_df.empty:
+            continue
+        if set(STOCK_BASIC_REQUIRED_COLS) - set(stock_df.columns):
+            continue
+
+        for _, row in stock_df[STOCK_BASIC_REQUIRED_COLS].iterrows():
+            code = normalize_stock_code(row.get("ts_code"))
+            name = str(row.get("name", "")).strip()
+            if code and name:
+                stock_names[code] = name
 
     return stock_names
 
@@ -189,18 +226,23 @@ def normalize_trade_date(date_text):
 def fetch_tushare_data(fetch_func, dataset_name, required_cols, max_retries=3, **kwargs):
     last_error = None
     for attempt in range(1, max_retries + 1):
-        try:
-            with tushare_no_proxy_env():
-                result = fetch_func(**kwargs)
-            if result is not None and not result.empty:
-                missing_cols = set(required_cols) - set(result.columns)
-                if not missing_cols:
-                    return result.copy()
-                last_error = f"缺少字段: {sorted(missing_cols)}，实际字段: {list(result.columns)}"
-            else:
-                last_error = "返回空数据"
-        except Exception as exc:
-            last_error = str(exc)
+        mode_errors = []
+        for disable_proxy, mode_name in tushare_request_modes():
+            try:
+                with tushare_request_context(disable_proxy):
+                    result = fetch_func(**kwargs)
+                if result is not None and not result.empty:
+                    missing_cols = set(required_cols) - set(result.columns)
+                    if not missing_cols:
+                        return result.copy()
+                    last_error = f"{mode_name} 缺少字段: {sorted(missing_cols)}，实际字段: {list(result.columns)}"
+                else:
+                    last_error = f"{mode_name} 返回空数据"
+            except Exception as exc:
+                last_error = f"{mode_name}: {exc}"
+            mode_errors.append(last_error)
+
+        last_error = "；".join(mode_errors)
 
         if attempt < max_retries:
             print(f"{dataset_name} 第{attempt}次获取失败：{last_error}，准备重试...")
@@ -240,9 +282,8 @@ def fetch_tushare_data_with_enddate_fallback(
 
 
 def fetch_market_data(stock_code, start_date, end_date, token=TS_TOKEN):
-    with tushare_no_proxy_env():
-        ts.set_token(token)
-        pro = ts.pro_api()
+    ts.set_token(token)
+    pro = ts.pro_api()
 
     start_date = normalize_trade_date(start_date)
     end_date = normalize_trade_date(end_date)

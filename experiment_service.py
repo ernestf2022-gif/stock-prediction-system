@@ -4,17 +4,15 @@ import os
 import numpy as np
 import pandas as pd
 import torch
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LinearRegression
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
     mean_absolute_error,
     mean_squared_error,
-    precision_score,
-    recall_score,
 )
 from sklearn.preprocessing import MinMaxScaler
+from statsmodels.tsa.arima.model import ARIMA
+from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
 from backtest_service import run_backtest
@@ -40,6 +38,45 @@ TECHNICAL_INDICATORS = ["MA5", "MA10", "MACD", "RSI", "VOLATILITY"]
 MARKET_INDEX_FEATURES = ["大盘指数", "INDEX_RET"]
 RETURN_FEATURES = ["RET", "LOG_RET", "INDEX_RET"]
 PRICE_FEATURES = ["开盘价", "最高价", "最低价", "收盘价", "成交额(千元)"]
+
+
+class DNNRegressor(nn.Module):
+    """全连接深度神经网络：用于模型对比实验。"""
+
+    def __init__(self, input_size, time_step=TIME_STEP, hidden_size=128):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(input_size * time_step, hidden_size),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_size, hidden_size // 2),
+            nn.ReLU(),
+            nn.Linear(hidden_size // 2, 1),
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+
+class CNNRegressor(nn.Module):
+    """一维 CNN：用于捕捉时间窗口内的局部变化模式。"""
+
+    def __init__(self, input_size, hidden_size=64):
+        super().__init__()
+        self.conv = nn.Sequential(
+            nn.Conv1d(input_size, hidden_size, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Conv1d(hidden_size, hidden_size, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.AdaptiveAvgPool1d(1),
+        )
+        self.fc = nn.Linear(hidden_size, 1)
+
+    def forward(self, x):
+        x = x.transpose(1, 2)
+        x = self.conv(x).squeeze(-1)
+        return self.fc(x)
 
 
 def _validate_features(features):
@@ -121,7 +158,6 @@ def _price_metrics(real_price, pred_price):
     mae = mean_absolute_error(real_price, pred_price)
     mape = float(np.mean(np.abs((real_price - pred_price) / np.maximum(np.abs(real_price), 1e-8))) * 100)
     return {
-        "MSE": float(mse),
         "RMSE": rmse,
         "MAE": float(mae),
         "MAPE": mape,
@@ -133,8 +169,6 @@ def _direction_metrics(real_price, pred_price, prev_price):
     pred_direction = (pred_price > prev_price).astype(int)
     return {
         "Accuracy": float(accuracy_score(real_direction, pred_direction)),
-        "Precision": float(precision_score(real_direction, pred_direction, zero_division=0)),
-        "Recall": float(recall_score(real_direction, pred_direction, zero_division=0)),
         "F1-score": float(f1_score(real_direction, pred_direction, zero_division=0)),
     }
 
@@ -189,6 +223,20 @@ def _train_lstm(model_class, train_loader, test_loader, input_size, epochs):
     return model
 
 
+def _predict_arima(pandas_df, forecast_len):
+    close_series = pandas_df["收盘价"].astype(float).reset_index(drop=True)
+    train_size = int(len(close_series) * 0.8)
+    forecast_steps = TIME_STEP + forecast_len
+    try:
+        fitted = ARIMA(close_series.iloc[:train_size], order=(5, 1, 0)).fit()
+        forecast = np.asarray(fitted.forecast(steps=forecast_steps), dtype=float)
+        return forecast[TIME_STEP : TIME_STEP + forecast_len]
+    except Exception as exc:
+        print(f"ARIMA 训练失败，使用上一交易日价格作为兜底预测：{exc}")
+        test_close = close_series.iloc[train_size:].to_numpy(dtype=float)
+        return test_close[TIME_STEP - 1 : TIME_STEP - 1 + forecast_len]
+
+
 def run_model_comparison(pandas_df, epochs=EXPERIMENT_EPOCHS):
     pandas_df = _normalize_experiment_dataframe(pandas_df)
     features = FEATURES
@@ -203,21 +251,18 @@ def run_model_comparison(pandas_df, epochs=EXPERIMENT_EPOCHS):
         scaler,
     ) = _prepare_feature_experiment(pandas_df, features)
 
-    flat_train = X_train.reshape((X_train.shape[0], -1))
-    flat_test = X_test.reshape((X_test.shape[0], -1))
-
     rows = []
-    rows.append(_evaluate_prediction("Naive Baseline", real_price, prev_price, prev_price, pandas_df))
 
-    linear_model = LinearRegression()
-    linear_model.fit(flat_train, y_train)
-    linear_pred = _inverse_close(linear_model.predict(flat_test), scaler, features)
-    rows.append(_evaluate_prediction("Linear Regression", real_price, linear_pred, prev_price, pandas_df))
+    arima_pred = _predict_arima(pandas_df, len(real_price))
+    rows.append(_evaluate_prediction("ARIMA", real_price, arima_pred, prev_price, pandas_df))
 
-    forest_model = RandomForestRegressor(n_estimators=80, random_state=42, n_jobs=-1)
-    forest_model.fit(flat_train, y_train)
-    forest_pred = _inverse_close(forest_model.predict(flat_test), scaler, features)
-    rows.append(_evaluate_prediction("Random Forest", real_price, forest_pred, prev_price, pandas_df))
+    dnn_model = _train_lstm(DNNRegressor, train_loader, test_loader, len(features), epochs)
+    dnn_pred = _predict_torch_model(dnn_model, X_test, scaler, features)
+    rows.append(_evaluate_prediction("DNN", real_price, dnn_pred, prev_price, pandas_df))
+
+    cnn_model = _train_lstm(CNNRegressor, train_loader, test_loader, len(features), epochs)
+    cnn_pred = _predict_torch_model(cnn_model, X_test, scaler, features)
+    rows.append(_evaluate_prediction("CNN", real_price, cnn_pred, prev_price, pandas_df))
 
     vanilla_model = _train_lstm(VanillaLSTM, train_loader, test_loader, len(features), epochs)
     vanilla_pred = _predict_torch_model(vanilla_model, X_test, scaler, features)
@@ -279,7 +324,15 @@ def _export_csv(rows, filename):
     return filename
 
 
-def run_experiments(stock_code, start_date, end_date, epochs=EXPERIMENT_EPOCHS):
+def _experiment_output_names(output_prefix=None):
+    if not output_prefix:
+        return MODEL_COMPARISON_CSV, ABLATION_RESULT_CSV
+
+    safe_prefix = str(output_prefix).replace(".", "_").replace("/", "_").replace("\\", "_")
+    return f"{safe_prefix}_model_comparison.csv", f"{safe_prefix}_ablation_result.csv"
+
+
+def run_experiments(stock_code, start_date, end_date, epochs=EXPERIMENT_EPOCHS, output_prefix=None):
     stock_name = resolve_stock_name(stock_code, allow_remote=True)
     stock_label = format_stock_label(stock_code, stock_name)
     lstm_df, _, _ = prepare_stock_dataset(stock_code, start_date, end_date)
@@ -288,8 +341,9 @@ def run_experiments(stock_code, start_date, end_date, epochs=EXPERIMENT_EPOCHS):
     model_rows = _format_rows(run_model_comparison(pandas_df, epochs=epochs))
     ablation_rows = _format_rows(run_ablation_experiment(pandas_df, epochs=epochs))
 
-    model_csv = _export_csv(model_rows, MODEL_COMPARISON_CSV)
-    ablation_csv = _export_csv(ablation_rows, ABLATION_RESULT_CSV)
+    model_csv_name, ablation_csv_name = _experiment_output_names(output_prefix)
+    model_csv = _export_csv(model_rows, model_csv_name)
+    ablation_csv = _export_csv(ablation_rows, ablation_csv_name)
 
     return {
         "stock_code": stock_code,

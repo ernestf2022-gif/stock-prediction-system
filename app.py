@@ -18,11 +18,12 @@ import os
 from flask import Flask, abort, jsonify, redirect, render_template, request, send_from_directory, url_for
 
 from config import APP_VERSION, CSV_DIR, END_DATE, EXCEL_DIR, RESULT_DIR, START_DATE, STOCK_CODE
-from experiment_service import run_experiments
 from job_service import (
     clear_all_jobs_and_files,
+    create_experiment_job,
     create_job,
     delete_job,
+    get_experiment_page_context,
     get_job_page_context,
     get_job_status,
     get_latest_finished_summary,
@@ -91,21 +92,15 @@ def experiment_route():
     if not stock_code or not start_date or not end_date:
         return "参数不完整", 400
 
-    try:
-        context = run_experiments(stock_code, start_date, end_date)
-    except Exception as exc:
-        return render_template(
-            "experiment.html",
-            error=str(exc),
-            stock_code=stock_code,
-            stock_label=stock_code,
-            start_date=start_date,
-            end_date=end_date,
-            model_rows=[],
-            ablation_rows=[],
-            app_version=APP_VERSION,
-        ), 500
+    jobid = create_experiment_job(stock_code, start_date, end_date)
+    return redirect(url_for("experiment_page", jobid=jobid))
 
+
+@app.route("/experiment/<jobid>", methods=["GET"])
+def experiment_page(jobid):
+    context = get_experiment_page_context(jobid)
+    if context is None:
+        abort(404)
     return render_template("experiment.html", **context, app_version=APP_VERSION)
 
 

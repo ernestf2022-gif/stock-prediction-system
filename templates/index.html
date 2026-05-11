@@ -116,16 +116,29 @@
                   {% for jobid, meta in jobs.items()|reverse %}
                     <li class="list-group-item d-flex justify-content-between align-items-start">
                       <div>
-                        <div><strong>{{ meta.stock_label|default(jobid, true) }}</strong> <span class="small-muted">({{ meta.status }})</span></div>
+                        <div>
+                          <strong>{{ meta.stock_label|default(jobid, true) }}</strong>
+                          <span class="small-muted">({{ meta.task_label|default('预测任务') }} / {{ meta.status }})</span>
+                        </div>
                         <div class="small-muted">任务：{{ jobid }}</div>
                         <div class="small-muted">提交：{{ meta.created_at_human }}</div>
                       </div>
                       <div class="d-flex gap-2 flex-wrap justify-content-end">
-                        <a href="/job/{{ jobid }}" class="btn btn-outline-secondary btn-sm view-job-link">查看</a>
-                        {% if meta.status == 'finished' and meta.csv_name %}
+                        {% if meta.job_type == 'experiment' %}
+                          <a href="/experiment/{{ jobid }}" class="btn btn-outline-secondary btn-sm view-job-link">查看</a>
+                        {% else %}
+                          <a href="/job/{{ jobid }}" class="btn btn-outline-secondary btn-sm view-job-link">查看</a>
+                        {% endif %}
+                        {% if meta.status == 'finished' and meta.job_type == 'experiment' and meta.model_csv %}
+                          <a href="{{ url_for('result_file', fname=meta.model_csv) }}" class="btn btn-outline-primary btn-sm">模型 CSV</a>
+                        {% endif %}
+                        {% if meta.status == 'finished' and meta.job_type == 'experiment' and meta.ablation_csv %}
+                          <a href="{{ url_for('result_file', fname=meta.ablation_csv) }}" class="btn btn-outline-success btn-sm">消融 CSV</a>
+                        {% endif %}
+                        {% if meta.status == 'finished' and meta.job_type != 'experiment' and meta.csv_name %}
                           <a href="{{ url_for('download_csv', fname=meta.csv_name) }}" class="btn btn-outline-primary btn-sm">下载 CSV</a>
                         {% endif %}
-                        {% if meta.status == 'finished' and meta.excel_name %}
+                        {% if meta.status == 'finished' and meta.job_type != 'experiment' and meta.excel_name %}
                           <a href="{{ url_for('download_excel', fname=meta.excel_name) }}" class="btn btn-outline-success btn-sm">下载 Excel</a>
                         {% endif %}
                         <button type="button" class="btn btn-outline-danger btn-sm delete-job-btn" data-jobid="{{ jobid }}">删除</button>
