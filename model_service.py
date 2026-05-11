@@ -9,13 +9,14 @@ from sklearn.metrics import (
     mean_absolute_error,
     mean_squared_error,
     precision_score,
+    r2_score,
     recall_score,
 )
 from sklearn.preprocessing import MinMaxScaler
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from backtest_service import make_strategy_suggestion, run_backtest
+from backtest_service import run_high_frequency_backtest
 from config import (
     BATCH_SIZE,
     BUY_THRESHOLD,
@@ -29,7 +30,7 @@ from config import (
     TRANSACTION_FEE,
 )
 from data_service import format_stock_label, prepare_stock_dataset, resolve_stock_name
-from plot_service import plot_loss_curves, plot_prediction_and_backtest, plot_roc_curve, setup_matplotlib
+from plot_service import plot_high_frequency_backtest, plot_loss_curves, plot_price_prediction, plot_roc_curve, setup_matplotlib
 
 
 FEATURES = [
@@ -50,22 +51,8 @@ FEATURES = [
 ]
 
 
-class AttentionLSTM(nn.Module):
-    def __init__(self, input_size, hidden_size=64):
-        super().__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
-        self.attn = nn.Linear(hidden_size, 1)
-        self.fc = nn.Linear(hidden_size, 1)
-
-    def forward(self, x):
-        out, _ = self.lstm(x)
-        weights = torch.softmax(self.attn(out), dim=1)
-        context = (weights * out).sum(dim=1)
-        return self.fc(context)
-
-
 class VanillaLSTM(nn.Module):
-    """普通 LSTM：用于和 Attention-LSTM 做对比/消融实验。"""
+    """普通 LSTM：用于收盘价预测。"""
 
     def __init__(self, input_size, hidden_size=64):
         super().__init__()
@@ -77,8 +64,8 @@ class VanillaLSTM(nn.Module):
         return self.fc(out[:, -1, :])
 
 
-class LSTMDirection(nn.Module):
-    """分类模型：预测涨跌方向。"""
+class VanillaLSTMDirection(nn.Module):
+    """普通 LSTM：用于涨跌方向分类。"""
 
     def __init__(self, input_size, hidden_size=32):
         super().__init__()
@@ -86,8 +73,8 @@ class LSTMDirection(nn.Module):
         self.fc = nn.Linear(hidden_size, 2)
 
     def forward(self, x):
-        x, _ = self.lstm(x)
-        return self.fc(x[:, -1, :])
+        out, _ = self.lstm(x)
+        return self.fc(out[:, -1, :])
 
 
 def create_dataset(df, features=FEATURES, time_step=TIME_STEP):
@@ -140,16 +127,16 @@ def build_data_loaders(train_data, test_data, batch_size=BATCH_SIZE):
         batch_size=batch_size,
         shuffle=False,
     )
-    train_loader_dir = DataLoader(
-        TensorDataset(torch.tensor(X_train_dir, dtype=torch.float32), torch.tensor(y_train_dir, dtype=torch.long)),
-        batch_size=batch_size,
-        shuffle=False,
-    )
     test_loader = DataLoader(
         TensorDataset(
             torch.tensor(X_test, dtype=torch.float32),
             torch.tensor(y_test, dtype=torch.float32).view(-1, 1),
         ),
+        batch_size=batch_size,
+        shuffle=False,
+    )
+    train_loader_dir = DataLoader(
+        TensorDataset(torch.tensor(X_train_dir, dtype=torch.float32), torch.tensor(y_train_dir, dtype=torch.long)),
         batch_size=batch_size,
         shuffle=False,
     )
@@ -226,17 +213,17 @@ def train_direction_model(model, train_loader, test_loader, epochs=EPOCHS):
 
 
 def train_models(train_loader, train_loader_dir, test_loader, test_loader_dir, input_size, epochs=EPOCHS):
-    model = AttentionLSTM(input_size)
-    dir_model = LSTMDirection(input_size)
+    model = VanillaLSTM(input_size)
+    direction_model = VanillaLSTMDirection(input_size)
 
     reg_loss_history, reg_test_loss_history = train_regression_model(model, train_loader, test_loader, epochs)
     dir_loss_history, dir_test_loss_history = train_direction_model(
-        dir_model, train_loader_dir, test_loader_dir, epochs
+        direction_model, train_loader_dir, test_loader_dir, epochs
     )
 
     return {
         "model": model,
-        "direction_model": dir_model,
+        "direction_model": direction_model,
         "reg_loss_history": reg_loss_history,
         "reg_test_loss_history": reg_test_loss_history,
         "dir_loss_history": dir_loss_history,
@@ -266,10 +253,20 @@ def predict_prices(model, test_loader, scaler, features=FEATURES):
 
 def evaluate_prices(real_price, pred_price):
     mse = mean_squared_error(real_price, pred_price)
+    rmse = float(np.sqrt(mse))
     mae = mean_absolute_error(real_price, pred_price)
+    mape = float(np.mean(np.abs((real_price - pred_price) / np.maximum(np.abs(real_price), 1e-8))) * 100)
+    r2 = r2_score(real_price, pred_price)
     avg_price = real_price.mean()
     error_rate = mae / avg_price
-    return mse, mae, avg_price, error_rate
+    return {
+        "rmse": rmse,
+        "mae": float(mae),
+        "mape": mape,
+        "r2": float(r2),
+        "avg_price": float(avg_price),
+        "error_rate": float(error_rate),
+    }
 
 
 def predict_direction(direction_model, test_loader_dir):
@@ -333,7 +330,7 @@ def predict_future_prices(model, scaled_df, scaler, pandas_df, features=FEATURES
 
 
 def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE, stock_name=None):
-    """股票数据爬取 + LSTM预测 + 回测 + 可视化完整流程。"""
+    """股票数据爬取 + Vanilla LSTM 收盘价预测 + 可视化完整流程。"""
     stock_name = stock_name or resolve_stock_name(stock_code, allow_remote=False)
     stock_label = format_stock_label(stock_code, stock_name)
     lstm_df, _, _ = prepare_stock_dataset(stock_code, start_date, end_date)
@@ -355,13 +352,17 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
     direction_model = trained["direction_model"]
 
     pred_price, real_price = predict_prices(model, test_loader, scaler)
-    mse, mae, avg_price, error_rate = evaluate_prices(real_price, pred_price)
-    print(f"MSE: {mse:.4f}, MAE: {mae:.4f}")
-    print(f"平均股价: {avg_price:.2f}")
-    print(f"MAE误差率: {error_rate:.2%}")
+    price_metrics = evaluate_prices(real_price, pred_price)
+    print(f"数据截止日期: {pandas_df['交易日期'].max()}")
+    print(f"模型: Vanilla LSTM 收盘价预测")
+    print(f"RMSE: {price_metrics['rmse']:.4f}, MAE: {price_metrics['mae']:.4f}")
+    print(f"MAPE: {price_metrics['mape']:.4f}%, R2: {price_metrics['r2']:.4f}")
+    print(f"平均股价: {price_metrics['avg_price']:.2f}")
+    print(f"MAE误差率: {price_metrics['error_rate']:.2%}")
 
     probabilities, dir_reals, dir_preds = predict_direction(direction_model, test_loader_dir)
     cls_metrics = evaluate_direction(dir_reals, dir_preds)
+    print(f"分类模型: Vanilla LSTM 涨跌方向分类")
     print(f"分类准确率: {cls_metrics['accuracy']:.4f}")
     print(f"分类精确率: {cls_metrics['precision']:.4f}")
     print(f"分类召回率: {cls_metrics['recall']:.4f}")
@@ -369,7 +370,7 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
     cm = cls_metrics["confusion_matrix"]
     print(f"混淆矩阵: TN={cm['tn']}, FP={cm['fp']}, FN={cm['fn']}, TP={cm['tp']}")
 
-    backtest = run_backtest(
+    backtest = run_high_frequency_backtest(
         real_price,
         pred_price,
         probabilities,
@@ -378,9 +379,8 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
         sell_threshold=SELL_THRESHOLD,
         fee=TRANSACTION_FEE,
     )
-    print(f"数据截止日期: {pandas_df['交易日期'].max()}")
     print(
-        f"{stock_label} 总收益率: {backtest.total_return:.4f}, "
+        f"高频策略总收益率: {backtest.total_return:.4f}, "
         f"最大回撤: {backtest.max_drawdown:.4f}, 年化夏普: {backtest.sharpe:.4f}"
     )
 
@@ -388,9 +388,6 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
     print("📢 未来10天预测价格：")
     for date_text, price in zip(future_dates, future_prices):
         print(f"{date_text}: {price:.2f}")
-
-    suggestion = make_strategy_suggestion(probabilities[-1], BUY_THRESHOLD, SELL_THRESHOLD)
-    print(f"📢 策略建议: {suggestion}")
 
     plot_loss_curves(
         trained["reg_loss_history"],
@@ -400,12 +397,10 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
         EPOCHS,
         stock_label=stock_label,
     )
+    dates = pandas_df["交易日期"].iloc[-len(real_price):]
+    plot_price_prediction(dates, real_price, pred_price, stock_label=stock_label)
     plot_roc_curve(dir_reals, probabilities, stock_label=stock_label)
-    plot_prediction_and_backtest(
-        backtest.dates,
-        backtest.real_price,
-        backtest.pred_price,
-        backtest.signal_bt,
+    plot_high_frequency_backtest(
         backtest.dates_bt,
         backtest.cumulative_return,
         backtest.buy_hold,
@@ -413,4 +408,4 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
         stock_label=stock_label,
     )
 
-    return backtest.trade_cycles
+    return []

@@ -5,29 +5,24 @@ import numpy as np
 import pandas as pd
 import torch
 from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
     mean_absolute_error,
     mean_squared_error,
+    r2_score,
 )
 from sklearn.preprocessing import MinMaxScaler
 from statsmodels.tsa.arima.model import ARIMA
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from backtest_service import run_backtest
 from config import (
     BATCH_SIZE,
-    BUY_THRESHOLD,
     EPOCHS,
     RESULT_DIR,
-    SELL_THRESHOLD,
     TIME_STEP,
-    TRANSACTION_FEE,
     ensure_directories,
 )
 from data_service import format_stock_label, prepare_stock_dataset, resolve_stock_name
-from model_service import AttentionLSTM, FEATURES, VanillaLSTM, train_regression_model
+from model_service import FEATURES, VanillaLSTM, train_regression_model
 
 
 EXPERIMENT_EPOCHS = min(EPOCHS, 30)
@@ -146,55 +141,23 @@ def _predict_torch_model(model, X_test, scaler, features):
     return _inverse_close(pred_scaled, scaler, features)
 
 
-def _direction_probabilities(pred_price, prev_price):
-    pred_return = (pred_price - prev_price) / np.maximum(np.abs(prev_price), 1e-8)
-    probabilities = 1 / (1 + np.exp(-pred_return * 30))
-    return np.clip(probabilities, 0.05, 0.95)
-
-
 def _price_metrics(real_price, pred_price):
     mse = mean_squared_error(real_price, pred_price)
     rmse = float(np.sqrt(mse))
     mae = mean_absolute_error(real_price, pred_price)
     mape = float(np.mean(np.abs((real_price - pred_price) / np.maximum(np.abs(real_price), 1e-8))) * 100)
+    r2 = r2_score(real_price, pred_price)
     return {
         "RMSE": rmse,
         "MAE": float(mae),
         "MAPE": mape,
+        "R²": float(r2),
     }
 
 
-def _direction_metrics(real_price, pred_price, prev_price):
-    real_direction = (real_price > prev_price).astype(int)
-    pred_direction = (pred_price > prev_price).astype(int)
-    return {
-        "Accuracy": float(accuracy_score(real_direction, pred_direction)),
-        "F1-score": float(f1_score(real_direction, pred_direction, zero_division=0)),
-    }
-
-
-def _evaluate_prediction(name, real_price, pred_price, prev_price, pandas_df):
-    probabilities = _direction_probabilities(pred_price, prev_price)
-    backtest = run_backtest(
-        real_price,
-        pred_price,
-        probabilities,
-        pandas_df,
-        buy_threshold=BUY_THRESHOLD,
-        sell_threshold=SELL_THRESHOLD,
-        fee=TRANSACTION_FEE,
-    )
+def _evaluate_prediction(name, real_price, pred_price):
     row = {"模型": name}
     row.update(_price_metrics(real_price, pred_price))
-    row.update(_direction_metrics(real_price, pred_price, prev_price))
-    row.update(
-        {
-            "总收益率": float(backtest.total_return),
-            "最大回撤": float(backtest.max_drawdown),
-            "夏普比率": float(backtest.sharpe),
-            "交易轮数": int(len(backtest.trade_cycles)),
-        }
-    )
     return row
 
 
@@ -254,23 +217,19 @@ def run_model_comparison(pandas_df, epochs=EXPERIMENT_EPOCHS):
     rows = []
 
     arima_pred = _predict_arima(pandas_df, len(real_price))
-    rows.append(_evaluate_prediction("ARIMA", real_price, arima_pred, prev_price, pandas_df))
+    rows.append(_evaluate_prediction("ARIMA", real_price, arima_pred))
 
     dnn_model = _train_lstm(DNNRegressor, train_loader, test_loader, len(features), epochs)
     dnn_pred = _predict_torch_model(dnn_model, X_test, scaler, features)
-    rows.append(_evaluate_prediction("DNN", real_price, dnn_pred, prev_price, pandas_df))
+    rows.append(_evaluate_prediction("DNN", real_price, dnn_pred))
 
     cnn_model = _train_lstm(CNNRegressor, train_loader, test_loader, len(features), epochs)
     cnn_pred = _predict_torch_model(cnn_model, X_test, scaler, features)
-    rows.append(_evaluate_prediction("CNN", real_price, cnn_pred, prev_price, pandas_df))
+    rows.append(_evaluate_prediction("CNN", real_price, cnn_pred))
 
     vanilla_model = _train_lstm(VanillaLSTM, train_loader, test_loader, len(features), epochs)
     vanilla_pred = _predict_torch_model(vanilla_model, X_test, scaler, features)
-    rows.append(_evaluate_prediction("Vanilla LSTM", real_price, vanilla_pred, prev_price, pandas_df))
-
-    attention_model = _train_lstm(AttentionLSTM, train_loader, test_loader, len(features), epochs)
-    attention_pred = _predict_torch_model(attention_model, X_test, scaler, features)
-    rows.append(_evaluate_prediction("Attention-LSTM", real_price, attention_pred, prev_price, pandas_df))
+    rows.append(_evaluate_prediction("Vanilla LSTM", real_price, vanilla_pred))
 
     return rows
 
@@ -292,13 +251,12 @@ def run_ablation_experiment(pandas_df, epochs=EXPERIMENT_EPOCHS):
 
     rows = []
     for experiment_name, features in experiments:
-        train_loader, test_loader, _, _, X_test, real_price, prev_price, scaler = _prepare_feature_experiment(
+        train_loader, test_loader, _, _, X_test, real_price, _, scaler = _prepare_feature_experiment(
             pandas_df, features
         )
-        model = _train_lstm(AttentionLSTM, train_loader, test_loader, len(features), epochs)
+        model = _train_lstm(VanillaLSTM, train_loader, test_loader, len(features), epochs)
         pred_price = _predict_torch_model(model, X_test, scaler, features)
         metrics = _price_metrics(real_price, pred_price)
-        metrics.update(_direction_metrics(real_price, pred_price, prev_price))
         rows.append({"实验名称": experiment_name, "特征数量": len(features), **metrics})
 
     return rows

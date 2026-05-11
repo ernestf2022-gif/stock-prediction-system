@@ -1,4 +1,4 @@
-#任务调度：异步执行预测 / 回测，不阻塞页面。
+#任务调度：异步执行预测 / 实验，不阻塞页面。
 import io
 import json
 import os
@@ -56,13 +56,17 @@ def parse_metrics_from_stdout(stdout_text):
     metrics = {}
     try:
         patterns = {
-            "total_return": r"总收益率: *([-\d\.]+)",
-            "max_drawdown": r"最大回撤: *([-\d\.]+)",
-            "sharpe": r"年化夏普: *([-\d\.]+)",
+            "rmse": r"RMSE: *([-\d\.]+)",
+            "mae": r"MAE: *([-\d\.]+)",
+            "mape": r"MAPE: *([-\d\.]+)",
+            "r2": r"R2: *([-\d\.]+)",
             "accuracy": r"分类准确率: *([-\d\.]+)",
             "precision": r"分类精确率: *([-\d\.]+)",
             "recall": r"分类召回率: *([-\d\.]+)",
             "f1": r"分类F1: *([-\d\.]+)",
+            "total_return": r"高频策略总收益率: *([-\d\.]+)",
+            "max_drawdown": r"最大回撤: *([-\d\.]+)",
+            "sharpe": r"年化夏普: *([-\d\.]+)",
         }
         for key, pattern in patterns.items():
             matched = re.search(pattern, stdout_text)
@@ -206,7 +210,7 @@ def run_pipeline_capture(stock_code, start_date, end_date, jobid):
 
     start_time = time.time()
     try:
-        trade_cycles = run_pipeline(
+        run_pipeline(
             stock_code=stock_code,
             start_date=start_date,
             end_date=end_date,
@@ -223,7 +227,6 @@ def run_pipeline_capture(stock_code, start_date, end_date, jobid):
                 meta["images"] = saved.copy()
                 meta["finished_at"] = time.time()
                 meta["duration"] = duration
-                meta["trade_cycles"] = trade_cycles
                 meta["metrics"] = metrics
                 meta["status"] = "finished"
                 save_jobs_unlocked()
@@ -484,13 +487,17 @@ def get_job_page_context(jobid):
     metrics = {}
     if raw_metrics:
         metrics = {
-            "total_return": format_metric(raw_metrics.get("total_return")),
-            "max_drawdown": format_metric(raw_metrics.get("max_drawdown")),
-            "sharpe": format_metric(raw_metrics.get("sharpe")),
+            "rmse": format_metric(raw_metrics.get("rmse")),
+            "mae": format_metric(raw_metrics.get("mae")),
+            "mape": format_metric(raw_metrics.get("mape")),
+            "r2": format_metric(raw_metrics.get("r2")),
             "accuracy": format_metric(raw_metrics.get("accuracy")),
             "precision": format_metric(raw_metrics.get("precision")),
             "recall": format_metric(raw_metrics.get("recall")),
             "f1": format_metric(raw_metrics.get("f1")),
+            "total_return": format_metric(raw_metrics.get("total_return")),
+            "max_drawdown": format_metric(raw_metrics.get("max_drawdown")),
+            "sharpe": format_metric(raw_metrics.get("sharpe")),
             "confusion_matrix": raw_metrics.get("confusion_matrix") or {},
         }
 
@@ -507,7 +514,6 @@ def get_job_page_context(jobid):
         "csv_name": meta_copy.get("csv_name"),
         "excel_name": meta_copy.get("excel_name"),
         "duration": int(meta_copy.get("duration")) if meta_copy.get("duration") else None,
-        "trade_cycles": meta_copy.get("trade_cycles", []),
     }
 
 

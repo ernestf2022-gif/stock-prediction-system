@@ -1,4 +1,4 @@
-#绘图服务：生成 K 线、预测曲线、回测曲线图片。
+#绘图服务：生成训练曲线、收盘价预测曲线和高频策略回测图片。
 import matplotlib
 
 matplotlib.use("Agg")
@@ -37,6 +37,7 @@ def plot_loss_curves(reg_loss_history, reg_test_loss_history, dir_loss_history, 
         linestyle="--",
     )
     plt.title(with_stock_title("训练集 / 测试集 Loss 曲线", stock_label))
+    plt.xlabel("Epoch")
     plt.ylabel("MSE Loss")
     plt.legend()
     plt.grid(True, linestyle="--", alpha=0.5)
@@ -58,7 +59,19 @@ def plot_loss_curves(reg_loss_history, reg_test_loss_history, dir_loss_history, 
     plt.tight_layout()
     plt.show()
 
-#thresholds
+def plot_price_prediction(dates, real_price, pred_price, stock_label=None):
+    plt.figure(figsize=(14, 5))
+    plt.plot(dates, real_price, label="真实收盘价")
+    plt.plot(dates, pred_price, label="预测收盘价", linestyle="--")
+    plt.title(with_stock_title("收盘价预测", stock_label))
+    plt.xlabel("时间")
+    plt.ylabel("价格（元）")
+    plt.legend()
+    plt.grid(True, linestyle="--", alpha=0.5)
+    plt.tight_layout()
+    plt.show()
+
+
 def plot_roc_curve(dir_reals, probabilities, stock_label=None):
     plt.figure(figsize=(8, 6))
     if len(np.unique(dir_reals)) >= 2:
@@ -84,55 +97,18 @@ def plot_roc_curve(dir_reals, probabilities, stock_label=None):
         plt.xlabel("假阳性率 FPR")
         plt.ylabel("真正率 TPR")
 
-    plt.title(with_stock_title("涨跌方向分类 ROC 曲线", stock_label))
+    plt.title(with_stock_title("Vanilla LSTM 涨跌方向分类 ROC 曲线", stock_label))
     plt.grid(True, linestyle="--", alpha=0.5)
     plt.tight_layout()
     plt.show()
 
 
-def plot_prediction_and_backtest(
-    dates,
-    real_price,
-    pred_price,
-    signal_bt,
-    dates_bt,
-    cumulative_return,
-    buy_hold,
-    max_dd_idx,
-    stock_label=None,
-):
-    plt.figure(figsize=(14, 8))
-
-    plt.subplot(2, 1, 1)
-    plt.plot(dates, real_price, label="真实收盘价")
-    plt.plot(dates, pred_price, label="预测收盘价", linestyle="--")
-
-    signal_plot = signal_bt.copy()
-    position = 0
-    buy_idx = []
-    sell_idx = []
-
-    for i in range(len(signal_plot)):
-        if signal_plot[i] == 1 and position == 0:
-            buy_idx.append(i)
-            position = 1
-        elif signal_plot[i] != 1 and position == 1:
-            sell_idx.append(i)
-            position = 0
-
-    plt.scatter(dates.iloc[buy_idx], real_price[buy_idx], marker="^", label="买入", s=50)
-    plt.scatter(dates.iloc[sell_idx], real_price[sell_idx], marker="v", label="卖出", s=50)
-
-    plt.title(with_stock_title("收盘价预测与交易信号", stock_label))
-    plt.ylabel("价格（元）")
-    plt.legend()
-    plt.grid(True, linestyle="--", alpha=0.5)
-
-    plt.subplot(2, 1, 2)
-    plt.plot(dates_bt, cumulative_return, label="策略累计收益")
+def plot_high_frequency_backtest(dates_bt, cumulative_return, buy_hold, max_dd_idx, stock_label=None):
+    plt.figure(figsize=(14, 5))
+    plt.plot(dates_bt, cumulative_return, label="高频策略累计收益")
     plt.plot(dates_bt, buy_hold, label="买入持有收益")
 
-    if max_dd_idx > 0:
+    if max_dd_idx > 0 and len(dates_bt) > max_dd_idx:
         plt.scatter(
             dates_bt.iloc[max_dd_idx],
             cumulative_return[max_dd_idx],
@@ -141,11 +117,10 @@ def plot_prediction_and_backtest(
             label="最大回撤点",
         )
 
-    plt.title(with_stock_title("策略累计收益与最大回撤", stock_label))
+    plt.title(with_stock_title("高频策略累计收益与持有收益", stock_label))
     plt.xlabel("时间")
     plt.ylabel("累计收益率")
     plt.legend()
     plt.grid(True, linestyle="--", alpha=0.5)
-
     plt.tight_layout()
     plt.show()

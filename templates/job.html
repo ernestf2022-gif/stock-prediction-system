@@ -44,34 +44,34 @@
 
         <div id="resultArea">
           {% if status == 'finished' %}
-            <h5>关键指标</h5>
+            <h5>收盘价预测指标</h5>
             <div class="row mb-3 text-center">
               <div class="col-sm-6 col-lg-3 mb-2">
                 <div class="card p-2">
-                  <div class="metric">{{ metrics.total_return|default('N/A') }}</div>
-                  <div class="metric-sub">总收益率</div>
+                  <div class="metric">{{ metrics.rmse|default('N/A') }}</div>
+                  <div class="metric-sub">RMSE</div>
                 </div>
               </div>
               <div class="col-sm-6 col-lg-3 mb-2">
                 <div class="card p-2">
-                  <div class="metric">{{ metrics.max_drawdown|default('N/A') }}</div>
-                  <div class="metric-sub">最大回撤</div>
+                  <div class="metric">{{ metrics.mae|default('N/A') }}</div>
+                  <div class="metric-sub">MAE</div>
                 </div>
               </div>
               <div class="col-sm-6 col-lg-3 mb-2">
                 <div class="card p-2">
-                  <div class="metric">{{ metrics.sharpe|default('N/A') }}</div>
-                  <div class="metric-sub">年化夏普</div>
+                  <div class="metric">{{ metrics.mape|default('N/A') }}</div>
+                  <div class="metric-sub">MAPE (%)</div>
                 </div>
               </div>
               <div class="col-sm-6 col-lg-3 mb-2">
                 <div class="card p-2">
-                  <div class="metric">{{ duration|default('—') }}</div>
-                  <div class="metric-sub">运行时长 (s)</div>
+                  <div class="metric">{{ metrics.r2|default('N/A') }}</div>
+                  <div class="metric-sub">R²</div>
                 </div>
               </div>
             </div>
-            <h5>分类指标</h5>
+            <h5>涨跌方向分类指标</h5>
             <div class="row mb-3 text-center">
               <div class="col-sm-6 col-lg-3 mb-2">
                 <div class="card p-2">
@@ -111,47 +111,28 @@
               </table>
             </div>
             {% endif %}
-<h5>交易周期（完整一笔交易）</h5>
-
-{% if trade_cycles and trade_cycles|length > 0 %}
-
-<table class="table table-bordered table-hover">
-  <thead>
-    <tr>
-      <th>开仓时间</th>
-      <th>平仓时间</th>
-      <th>开仓价</th>
-      <th>平仓价</th>
-      <th>收益率</th>
-      <th>持仓天数</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    {% for t in trade_cycles %}
-    <tr>
-      <td>{{ t.entry_date }}</td>
-      <td>{{ t.exit_date }}</td>
-      <td>{{ "%.2f"|format(t.entry_price) }}</td>
-      <td>{{ "%.2f"|format(t.exit_price) }}</td>
-
-      <td>
-        {% if t.return > 0 %}
-          <span style="color:green">{{ "%.2f%%"|format(t.return*100) }}</span>
-        {% else %}
-          <span style="color:red">{{ "%.2f%%"|format(t.return*100) }}</span>
-        {% endif %}
-      </td>
-
-      <td>{{ t.hold_days }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
-{% else %}
-  <div class="small-muted">没有形成完整交易周期</div>
-{% endif %}
+            <h5>高频策略回测指标</h5>
+            <div class="row mb-3 text-center">
+              <div class="col-sm-6 col-lg-4 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.total_return|default('N/A') }}</div>
+                  <div class="metric-sub">总收益率</div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-4 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.max_drawdown|default('N/A') }}</div>
+                  <div class="metric-sub">最大回撤</div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-4 mb-2">
+                <div class="card p-2">
+                  <div class="metric">{{ metrics.sharpe|default('N/A') }}</div>
+                  <div class="metric-sub">年化夏普</div>
+                </div>
+              </div>
+            </div>
+            <div class="small-muted mb-3">运行时长：{{ duration|default('—') }} 秒</div>
             <h5>图像（全部）</h5>
             {% if images %}
               {% for im in images %}
