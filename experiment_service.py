@@ -31,8 +31,8 @@ from plot_service import plot_price_prediction, setup_matplotlib
 EXPERIMENT_EPOCHS = min(EPOCHS, 30)
 MODEL_COMPARISON_CSV = "model_comparison.csv"
 ABLATION_RESULT_CSV = "ablation_result.csv"
-DNN_ABLATION_EXPERIMENT_NAME = "No Market Index"
-DNN_ABLATION_MODELS = ("Vanilla LSTM", "DNN")
+NO_MARKET_INDEX_ABLATION_NAME = "No Market Index"
+NO_MARKET_INDEX_ABLATION_MODELS = ("Vanilla LSTM", "ARIMA", "DNN", "CNN")
 
 TECHNICAL_INDICATORS = ["MA5", "MA10", "MACD", "RSI", "VOLATILITY"]
 MARKET_INDEX_FEATURES = ["大盘指数", "INDEX_RET"]
@@ -385,11 +385,20 @@ def run_ablation_experiment(pandas_df, epochs=EXPERIMENT_EPOCHS, full_features_r
         metrics = _price_metrics(real_price, pred_price)
         rows.append({"模型": "Vanilla LSTM", "实验名称": experiment_name, "特征数量": len(features), **metrics})
 
-        if experiment_name == "No Market Index":
+        if experiment_name == NO_MARKET_INDEX_ABLATION_NAME:
+            arima_pred_price = _predict_arima(pandas_df, len(real_price))
+            arima_metrics = _price_metrics(real_price, arima_pred_price)
+            rows.append({"模型": "ARIMA", "实验名称": experiment_name, "特征数量": 1, **arima_metrics})
+
             dnn_model = _train_lstm(DNNRegressor, train_loader, test_loader, len(features), epochs)
             dnn_pred_price = _predict_torch_model(dnn_model, X_test, scaler, features)
             dnn_metrics = _price_metrics(real_price, dnn_pred_price)
             rows.append({"模型": "DNN", "实验名称": experiment_name, "特征数量": len(features), **dnn_metrics})
+
+            cnn_model = _train_lstm(CNNRegressor, train_loader, test_loader, len(features), epochs)
+            cnn_pred_price = _predict_torch_model(cnn_model, X_test, scaler, features)
+            cnn_metrics = _price_metrics(real_price, cnn_pred_price)
+            rows.append({"模型": "CNN", "实验名称": experiment_name, "特征数量": len(features), **cnn_metrics})
 
     return rows
 
@@ -410,7 +419,7 @@ def _format_rows(rows):
 def split_ablation_rows_for_display(rows):
     main_rows = []
     market_index_model_rows = []
-    comparison_models = set(DNN_ABLATION_MODELS)
+    comparison_models = set(NO_MARKET_INDEX_ABLATION_MODELS)
     seen_comparison_rows = set()
 
     for row in rows or []:
@@ -418,20 +427,20 @@ def split_ablation_rows_for_display(rows):
         experiment_name = row.get("实验名称")
         display_row = row if "模型" in row else {"模型": model_name, **row}
 
-        if experiment_name == DNN_ABLATION_EXPERIMENT_NAME and model_name in comparison_models:
+        if experiment_name == NO_MARKET_INDEX_ABLATION_NAME and model_name in comparison_models:
             key = (model_name, experiment_name)
             if key not in seen_comparison_rows:
                 market_index_model_rows.append(display_row)
                 seen_comparison_rows.add(key)
 
-        if model_name == "DNN":
+        if model_name != "Vanilla LSTM":
             continue
         main_rows.append(display_row)
 
     market_index_model_rows.sort(
-        key=lambda item: DNN_ABLATION_MODELS.index(item.get("模型"))
-        if item.get("模型") in DNN_ABLATION_MODELS
-        else len(DNN_ABLATION_MODELS)
+        key=lambda item: NO_MARKET_INDEX_ABLATION_MODELS.index(item.get("模型"))
+        if item.get("模型") in NO_MARKET_INDEX_ABLATION_MODELS
+        else len(NO_MARKET_INDEX_ABLATION_MODELS)
     )
     return main_rows, market_index_model_rows
 

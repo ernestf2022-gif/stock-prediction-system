@@ -128,6 +128,32 @@
         {% else %}
           <div class="small-muted">暂无特征消融结果。</div>
         {% endif %}
+
+        {% if market_index_model_rows %}
+          <hr>
+          <h6 class="mb-2">No Market Index 模型对照消融</h6>
+          <p class="small-muted mb-2">复用 Vanilla LSTM 的 No Market Index 结果，并与 ARIMA、DNN、CNN 在相同去大盘指数设定下对照。</p>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle text-center">
+              <thead>
+                <tr>
+                  {% for key in market_index_model_rows[0].keys() %}
+                    <th>{{ key }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in market_index_model_rows %}
+                  <tr>
+                    {% for value in row.values() %}
+                      <td>{{ value }}</td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
       </div>
       {% endif %}
 
