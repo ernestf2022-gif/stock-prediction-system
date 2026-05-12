@@ -1063,121 +1063,18 @@
     "duration": 64.45572757720947,
     "finished_at": 1778566765.122255
   },
-  "EXP_688981.SH_20260512143232": {
-    "job_type": "experiment",
-    "status": "finished",
-    "created_at": 1778567552.6468766,
+  "600028.SH_20260512143338": {
+    "job_type": "prediction",
+    "status": "running",
+    "created_at": 1778567618.4934773,
+    "images": [],
     "stdout": "",
     "error": null,
-    "stock_code": "688981.SH",
-    "stock_name": "中芯国际",
-    "stock_label": "中芯国际（688981.SH）",
-    "start_date": "20190101",
-    "end_date": "20260506",
-    "duration": 25.61658501625061,
-    "model_rows": [
-      {
-        "模型": "ARIMA",
-        "RMSE": 18.607913,
-        "MAE": 15.738522,
-        "MAPE": 14.163467,
-        "R²": -0.29533
-      },
-      {
-        "模型": "DNN",
-        "RMSE": 6.418105,
-        "MAE": 5.28338,
-        "MAPE": 4.938771,
-        "R²": 0.845901
-      },
-      {
-        "模型": "CNN",
-        "RMSE": 6.484602,
-        "MAE": 5.068123,
-        "MAPE": 4.672693,
-        "R²": 0.842692
-      },
-      {
-        "模型": "Vanilla LSTM",
-        "RMSE": 3.947095,
-        "MAE": 2.769469,
-        "MAPE": 2.453772,
-        "R²": 0.941717
-      }
-    ],
-    "ablation_rows": [
-      {
-        "模型": "Vanilla LSTM",
-        "实验名称": "Full Features",
-        "特征数量": 14,
-        "RMSE": 3.947095,
-        "MAE": 2.769469,
-        "MAPE": 2.453772,
-        "R²": 0.941717
-      },
-      {
-        "模型": "Vanilla LSTM",
-        "实验名称": "No Technical Indicators",
-        "特征数量": 9,
-        "RMSE": 6.461273,
-        "MAE": 5.267146,
-        "MAPE": 4.708618,
-        "R²": 0.843821
-      },
-      {
-        "模型": "Vanilla LSTM",
-        "实验名称": "No Market Index",
-        "特征数量": 12,
-        "RMSE": 4.20483,
-        "MAE": 3.214789,
-        "MAPE": 2.935373,
-        "R²": 0.933857
-      },
-      {
-        "模型": "DNN",
-        "实验名称": "No Market Index",
-        "特征数量": 12,
-        "RMSE": 8.216492,
-        "MAE": 7.229769,
-        "MAPE": 6.766143,
-        "R²": 0.747444
-      },
-      {
-        "模型": "Vanilla LSTM",
-        "实验名称": "No Return Features",
-        "特征数量": 11,
-        "RMSE": 5.310045,
-        "MAE": 4.051924,
-        "MAPE": 3.616896,
-        "R²": 0.894517
-      },
-      {
-        "模型": "Vanilla LSTM",
-        "实验名称": "Only Price Features",
-        "特征数量": 5,
-        "RMSE": 5.610257,
-        "MAE": 4.476574,
-        "MAPE": 4.03256,
-        "R²": 0.882253
-      }
-    ],
-    "model_csv": "EXP_688981_SH_20260512143232_model_comparison.csv",
-    "ablation_csv": "EXP_688981_SH_20260512143232_ablation_result.csv",
-    "model_prediction_images": [
-      "EXP_688981_SH_20260512143232_ARIMA_price_prediction.png",
-      "EXP_688981_SH_20260512143232_DNN_price_prediction.png",
-      "EXP_688981_SH_20260512143232_CNN_price_prediction.png",
-      "EXP_688981_SH_20260512143232_Vanilla_LSTM_price_prediction.png"
-    ],
-    "result_files": [
-      "EXP_688981_SH_20260512143232_model_comparison.csv",
-      "EXP_688981_SH_20260512143232_ablation_result.csv",
-      "EXP_688981_SH_20260512143232_ARIMA_price_prediction.png",
-      "EXP_688981_SH_20260512143232_DNN_price_prediction.png",
-      "EXP_688981_SH_20260512143232_CNN_price_prediction.png",
-      "EXP_688981_SH_20260512143232_Vanilla_LSTM_price_prediction.png"
-    ],
-    "epochs": 30,
-    "finished_at": 1778567578.266452
+    "metrics": {},
+    "stock_code": "600028.SH",
+    "stock_name": "中国石化",
+    "csv_name": "600028_SH_LSTM.csv",
+    "excel_name": "600028_SH_LSTM.xlsx",
+    "duration": null
   }
 }
