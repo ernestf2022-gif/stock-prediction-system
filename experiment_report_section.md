@@ -14,7 +14,7 @@
 
 价格预测指标包括 RMSE、MAE、MAPE 和 R²。其中 RMSE、MAE 和 MAPE 用于衡量预测价格与真实价格之间的误差，R² 用于衡量模型对真实收盘价波动的解释能力。
 
-涨跌概率信号指标包括方向命中率、平均上涨概率、模型看涨比例和买入信号命中率，用于评估 Enhanced Vanilla LSTM 输出的交易概率是否具备信号价值。
+涨跌概率信号指标包括方向命中率、平均上涨概率、模型看涨比例和买入信号命中率，用于评估 BiLSTM-Attention Direction 输出的交易概率是否具备信号价值。
 
 回测评价指标包括 Total Return、Max Drawdown、Sharpe Ratio、期末资产、交易次数、胜率、平均仓位和累计交易成本。系统基于模型输出的上涨概率、手续费、最低佣金、卖出税费、滑点、初始资金、整手交易、T+1 约束和仓位约束执行日线策略回测，并同时展示策略累计收益和买入持有收益。
 
@@ -34,6 +34,6 @@ Full Features 使用全部特征；No Technical Indicators 去除 MA5、MA10、M
 
 ## 5.6 实验结果分析
 
-在获得预测结果后，系统将不同模型和不同特征组合下的 RMSE、MAE、MAPE 和 R² 进行对比，从而分析模型结构与特征类型对收盘价预测性能的影响。同时，系统结合 Enhanced Vanilla LSTM 涨跌概率信号进行日线策略回测，对比策略累计收益与买入持有收益。
+在获得预测结果后，系统将不同模型和不同特征组合下的 RMSE、MAE、MAPE 和 R² 进行对比，从而分析模型结构与特征类型对收盘价预测性能的影响。同时，系统结合 BiLSTM-Attention Direction 涨跌概率信号进行日线策略回测，对比策略累计收益与买入持有收益。
 
 模型对比实验与特征消融实验的结果将分别导出为 `static/results/model_comparison.csv` 和 `static/results/ablation_result.csv`，可直接用于论文表格、结果分析和后续可视化。

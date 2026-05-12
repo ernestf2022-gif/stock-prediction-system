@@ -57,6 +57,8 @@ FEATURES = [
     "INDEX_RET",
 ]
 
+DIRECTION_MODEL_NAME = "BiLSTM-Attention Direction"
+
 
 def set_random_seed(seed=RANDOM_SEED):
     random.seed(seed)
@@ -72,8 +74,8 @@ def set_random_seed(seed=RANDOM_SEED):
         torch.use_deterministic_algorithms(True)
 
 
-class VanillaLSTMDirection(nn.Module):
-    """增强 LSTM：输出下一周期上涨概率，用于交易信号。"""
+class BiLSTMAttentionDirection(nn.Module):
+    """双向 LSTM + LayerNorm + Attention：输出下一周期上涨概率，用于交易信号。"""
 
     def __init__(self, input_size, hidden_size=64, num_layers=2, dropout=0.25):
         super().__init__()
@@ -204,7 +206,7 @@ def train_direction_model(model, train_loader, test_loader, epochs=EPOCHS):
 
 
 def train_models(train_loader_dir, test_loader_dir, input_size, epochs=EPOCHS):
-    direction_model = VanillaLSTMDirection(input_size)
+    direction_model = BiLSTMAttentionDirection(input_size)
 
     dir_loss_history, dir_test_loss_history = train_direction_model(
         direction_model, train_loader_dir, test_loader_dir, epochs
@@ -373,7 +375,7 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
         adaptive_window=SIGNAL_ADAPTIVE_WINDOW,
     )
     cls_metrics = evaluate_direction(dir_reals, dir_preds, probabilities=probabilities, trade_signal=backtest.signal)
-    print(f"信号模型: Enhanced Vanilla LSTM 涨跌概率")
+    print(f"信号模型: {DIRECTION_MODEL_NAME} 涨跌概率")
     print(
         f"实际买入阈值: {buy_threshold:.4f}, 实际卖出阈值: {sell_threshold:.4f}, "
         f"滚动阈值窗口: {SIGNAL_ADAPTIVE_WINDOW}"
