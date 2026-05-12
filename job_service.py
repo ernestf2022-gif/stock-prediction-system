@@ -11,7 +11,7 @@ import traceback
 
 from config import BASE_DIR, CSV_DIR, EXCEL_DIR, RESULT_DIR, ensure_directories
 from data_service import format_stock_label, resolve_stock_name
-from experiment_service import run_experiments
+from experiment_service import run_experiments, split_ablation_rows_for_display
 from model_service import run_pipeline
 from plot_service import plt
 
@@ -454,6 +454,7 @@ def create_experiment_job(stock_code, start_date, end_date):
             "duration": None,
             "model_rows": [],
             "ablation_rows": [],
+            "market_index_model_rows": [],
             "model_csv": None,
             "ablation_csv": None,
             "model_prediction_images": [],
@@ -536,6 +537,10 @@ def get_experiment_page_context(jobid):
     meta_copy = attach_display_fields(meta_copy)
     stdout_full = meta_copy.get("stdout", "") or ""
     snippet = stdout_full if len(stdout_full) <= 1200 else (stdout_full[:800] + "\n...\n" + stdout_full[-400:])
+    ablation_rows = meta_copy.get("ablation_rows", [])
+    market_index_model_rows = meta_copy.get("market_index_model_rows")
+    if market_index_model_rows is None:
+        ablation_rows, market_index_model_rows = split_ablation_rows_for_display(ablation_rows)
 
     return {
         "jobid": jobid,
@@ -549,7 +554,8 @@ def get_experiment_page_context(jobid):
         "epochs": meta_copy.get("epochs"),
         "duration": int(meta_copy.get("duration")) if meta_copy.get("duration") else None,
         "model_rows": meta_copy.get("model_rows", []),
-        "ablation_rows": meta_copy.get("ablation_rows", []),
+        "ablation_rows": ablation_rows,
+        "market_index_model_rows": market_index_model_rows,
         "model_csv": meta_copy.get("model_csv"),
         "ablation_csv": meta_copy.get("ablation_csv"),
         "model_prediction_images": meta_copy.get("model_prediction_images", []),

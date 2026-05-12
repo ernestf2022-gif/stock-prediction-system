@@ -31,6 +31,8 @@ from plot_service import plot_price_prediction, setup_matplotlib
 EXPERIMENT_EPOCHS = min(EPOCHS, 30)
 MODEL_COMPARISON_CSV = "model_comparison.csv"
 ABLATION_RESULT_CSV = "ablation_result.csv"
+DNN_ABLATION_EXPERIMENT_NAME = "No Market Index"
+DNN_ABLATION_MODELS = ("Vanilla LSTM", "DNN")
 
 TECHNICAL_INDICATORS = ["MA5", "MA10", "MACD", "RSI", "VOLATILITY"]
 MARKET_INDEX_FEATURES = ["大盘指数", "INDEX_RET"]
@@ -405,6 +407,35 @@ def _format_rows(rows):
     return formatted_rows
 
 
+def split_ablation_rows_for_display(rows):
+    main_rows = []
+    market_index_model_rows = []
+    comparison_models = set(DNN_ABLATION_MODELS)
+    seen_comparison_rows = set()
+
+    for row in rows or []:
+        model_name = row.get("模型") or "Vanilla LSTM"
+        experiment_name = row.get("实验名称")
+        display_row = row if "模型" in row else {"模型": model_name, **row}
+
+        if experiment_name == DNN_ABLATION_EXPERIMENT_NAME and model_name in comparison_models:
+            key = (model_name, experiment_name)
+            if key not in seen_comparison_rows:
+                market_index_model_rows.append(display_row)
+                seen_comparison_rows.add(key)
+
+        if model_name == "DNN":
+            continue
+        main_rows.append(display_row)
+
+    market_index_model_rows.sort(
+        key=lambda item: DNN_ABLATION_MODELS.index(item.get("模型"))
+        if item.get("模型") in DNN_ABLATION_MODELS
+        else len(DNN_ABLATION_MODELS)
+    )
+    return main_rows, market_index_model_rows
+
+
 def _export_csv(rows, filename):
     ensure_directories()
     path = os.path.join(RESULT_DIR, filename)
@@ -429,13 +460,14 @@ def run_experiments(stock_code, start_date, end_date, epochs=EXPERIMENT_EPOCHS, 
     model_rows_raw, model_prediction_curves = run_model_comparison(pandas_df, epochs=epochs, include_predictions=True)
     full_features_row = _ablation_full_features_from_model_rows(model_rows_raw)
     model_rows = _format_rows(model_rows_raw)
-    ablation_rows = _format_rows(
+    all_ablation_rows = _format_rows(
         run_ablation_experiment(pandas_df, epochs=epochs, full_features_row=full_features_row)
     )
+    ablation_rows, market_index_model_rows = split_ablation_rows_for_display(all_ablation_rows)
 
     model_csv_name, ablation_csv_name = _experiment_output_names(output_prefix)
     model_csv = _export_csv(model_rows, model_csv_name)
-    ablation_csv = _export_csv(ablation_rows, ablation_csv_name)
+    ablation_csv = _export_csv(all_ablation_rows, ablation_csv_name)
     model_prediction_images = _save_model_prediction_plots(
         model_prediction_curves,
         stock_label,
@@ -450,6 +482,7 @@ def run_experiments(stock_code, start_date, end_date, epochs=EXPERIMENT_EPOCHS, 
         "epochs": epochs,
         "model_rows": model_rows,
         "ablation_rows": ablation_rows,
+        "market_index_model_rows": market_index_model_rows,
         "model_csv": model_csv,
         "ablation_csv": ablation_csv,
         "model_prediction_images": model_prediction_images,
