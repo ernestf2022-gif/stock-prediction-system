@@ -1,4 +1,6 @@
 #模型服务：训练、预测、输出结果。
+import random
+
 import numpy as np
 import pandas as pd
 import torch
@@ -8,8 +10,10 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from backtest_service import run_daily_signal_backtest
 from config import (
+    ADAPTIVE_SIGNAL_THRESHOLDS,
     BATCH_SIZE,
     BUY_THRESHOLD,
+    BUY_SIGNAL_QUANTILE,
     DIRECTION_RETURN_THRESHOLD,
     END_DATE,
     EPOCHS,
@@ -18,8 +22,12 @@ from config import (
     MAX_POSITION_PCT,
     MIN_COMMISSION,
     MIN_EXPECTED_RETURN,
+    MIN_SIGNAL_THRESHOLD_GAP,
+    RANDOM_SEED,
     SELL_THRESHOLD,
+    SELL_SIGNAL_QUANTILE,
     SELL_TAX,
+    SIGNAL_ADAPTIVE_WINDOW,
     SLIPPAGE,
     START_DATE,
     STOCK_CODE,
@@ -48,6 +56,20 @@ FEATURES = [
     "LOG_RET",
     "INDEX_RET",
 ]
+
+
+def set_random_seed(seed=RANDOM_SEED):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    try:
+        torch.use_deterministic_algorithms(True, warn_only=True)
+    except TypeError:
+        torch.use_deterministic_algorithms(True)
 
 
 class VanillaLSTMDirection(nn.Module):
@@ -195,7 +217,7 @@ def train_models(train_loader_dir, test_loader_dir, input_size, epochs=EPOCHS):
     }
 
 
-def predict_direction(direction_model, test_loader_dir):
+def predict_direction(direction_model, test_loader_dir, decision_threshold=0.5):
     direction_model.eval()
     probabilities = []
     dir_reals = []
@@ -208,8 +230,34 @@ def predict_direction(direction_model, test_loader_dir):
 
     probabilities = np.concatenate(probabilities)
     dir_reals = np.concatenate(dir_reals)
-    dir_preds = (probabilities >= 0.5).astype(int)
+    dir_preds = (probabilities >= decision_threshold).astype(int)
     return probabilities, dir_reals, dir_preds
+
+
+def calibrate_signal_thresholds(
+    train_probabilities,
+    base_buy_threshold=BUY_THRESHOLD,
+    base_sell_threshold=SELL_THRESHOLD,
+    buy_quantile=BUY_SIGNAL_QUANTILE,
+    sell_quantile=SELL_SIGNAL_QUANTILE,
+    min_gap=MIN_SIGNAL_THRESHOLD_GAP,
+):
+    probabilities = np.asarray(train_probabilities, dtype=float)
+    probabilities = probabilities[np.isfinite(probabilities)]
+    if not ADAPTIVE_SIGNAL_THRESHOLDS or len(probabilities) < 10:
+        return base_buy_threshold, base_sell_threshold
+
+    adaptive_buy = float(np.quantile(probabilities, buy_quantile))
+    adaptive_sell = float(np.quantile(probabilities, sell_quantile))
+    buy_threshold = min(base_buy_threshold, adaptive_buy)
+    sell_threshold = max(base_sell_threshold, adaptive_sell)
+
+    if sell_threshold >= buy_threshold - min_gap:
+        sell_threshold = buy_threshold - min_gap
+
+    buy_threshold = min(max(buy_threshold, 0.01), 0.99)
+    sell_threshold = min(max(sell_threshold, 0.01), buy_threshold - 1e-6)
+    return buy_threshold, sell_threshold
 
 
 def evaluate_direction(dir_reals, dir_preds, probabilities=None, trade_signal=None):
@@ -222,6 +270,7 @@ def evaluate_direction(dir_reals, dir_preds, probabilities=None, trade_signal=No
         min_len = min(len(trade_signal), len(dir_reals))
         buy_mask = np.asarray(trade_signal[:min_len]) == 1
         signal_count = int(buy_mask.sum())
+        positive_rate = float(signal_count / min_len) if min_len else 0.0
         if signal_count:
             signal_hit_rate = float(np.mean(np.asarray(dir_reals[:min_len])[buy_mask] == 1))
     return {
@@ -271,6 +320,7 @@ def inverse_test_market_data(test_data, prediction_len, scaler, features=FEATURE
 
 def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE, stock_name=None):
     """股票数据爬取 + 涨跌概率信号训练 + 日线策略回测流程。"""
+    set_random_seed()
     stock_name = stock_name or resolve_stock_name(stock_code, allow_remote=False)
     stock_label = format_stock_label(stock_code, stock_name)
     lstm_df, _, _ = prepare_stock_dataset(stock_code, start_date, end_date)
@@ -290,7 +340,13 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
 
     print(f"数据截止日期: {pandas_df['交易日期'].max()}")
 
-    probabilities, dir_reals, dir_preds = predict_direction(direction_model, test_loader_dir)
+    train_probabilities, _, _ = predict_direction(direction_model, train_loader_dir)
+    buy_threshold, sell_threshold = calibrate_signal_thresholds(train_probabilities)
+    probabilities, dir_reals, dir_preds = predict_direction(
+        direction_model,
+        test_loader_dir,
+        decision_threshold=buy_threshold,
+    )
     market_data = inverse_test_market_data(test_data, len(probabilities), scaler)
     backtest = run_daily_signal_backtest(
         market_data["close"].to_numpy(dtype=float),
@@ -298,8 +354,8 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
         probabilities,
         pandas_df,
         market_data=market_data,
-        buy_threshold=BUY_THRESHOLD,
-        sell_threshold=SELL_THRESHOLD,
+        buy_threshold=buy_threshold,
+        sell_threshold=sell_threshold,
         fee=TRANSACTION_FEE,
         sell_tax=SELL_TAX,
         min_commission=MIN_COMMISSION,
@@ -310,12 +366,21 @@ def run_pipeline(stock_code=STOCK_CODE, start_date=START_DATE, end_date=END_DATE
         min_expected_return=MIN_EXPECTED_RETURN,
         stop_loss=STOP_LOSS,
         take_profit=TAKE_PROFIT,
+        reference_probabilities=train_probabilities,
+        buy_quantile=BUY_SIGNAL_QUANTILE,
+        sell_quantile=SELL_SIGNAL_QUANTILE,
+        min_threshold_gap=MIN_SIGNAL_THRESHOLD_GAP,
+        adaptive_window=SIGNAL_ADAPTIVE_WINDOW,
     )
     cls_metrics = evaluate_direction(dir_reals, dir_preds, probabilities=probabilities, trade_signal=backtest.signal)
     print(f"信号模型: Enhanced Vanilla LSTM 涨跌概率")
+    print(
+        f"实际买入阈值: {buy_threshold:.4f}, 实际卖出阈值: {sell_threshold:.4f}, "
+        f"滚动阈值窗口: {SIGNAL_ADAPTIVE_WINDOW}"
+    )
     print(f"方向命中率: {cls_metrics['direction_accuracy']:.4f}")
     print(f"平均上涨概率: {cls_metrics['avg_up_probability']:.4f}")
-    print(f"模型看涨比例: {cls_metrics['positive_rate']:.4f}")
+    print(f"信号触发比例: {cls_metrics['positive_rate']:.4f}")
     print(f"交易信号命中率: {cls_metrics['signal_hit_rate']:.4f}")
     print(f"买入信号次数: {cls_metrics['signal_count']}")
     print(

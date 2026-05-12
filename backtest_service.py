@@ -42,9 +42,21 @@ def make_signal(
     buy_threshold=0.6,
     sell_threshold=0.4,
     min_expected_return=0.002,
+    reference_probabilities=None,
+    buy_quantile=None,
+    sell_quantile=None,
+    min_threshold_gap=0.02,
+    adaptive_window=20,
 ):
     probabilities = np.asarray(probabilities, dtype=float)
     signal = np.zeros(len(probabilities), dtype=int)
+    reference_probabilities = np.asarray(
+        [] if reference_probabilities is None else reference_probabilities,
+        dtype=float,
+    )
+    reference_probabilities = reference_probabilities[np.isfinite(reference_probabilities)]
+    if adaptive_window and len(reference_probabilities) > adaptive_window:
+        reference_probabilities = reference_probabilities[-adaptive_window:]
 
     if pred_price is not None and real_price is not None:
         pred_price = np.asarray(pred_price, dtype=float)
@@ -59,11 +71,24 @@ def make_signal(
         expected_return = None
 
     for idx, probability in enumerate(probabilities):
+        current_buy_threshold = buy_threshold
+        current_sell_threshold = sell_threshold
+        if buy_quantile is not None and sell_quantile is not None and len(reference_probabilities):
+            history = np.concatenate([reference_probabilities, probabilities[:idx]])
+            if adaptive_window and len(history) > adaptive_window:
+                history = history[-adaptive_window:]
+            history = history[np.isfinite(history)]
+            if len(history):
+                current_buy_threshold = min(buy_threshold, float(np.quantile(history, buy_quantile)))
+                current_sell_threshold = max(sell_threshold, float(np.quantile(history, sell_quantile)))
+                if current_sell_threshold >= current_buy_threshold - min_threshold_gap:
+                    current_sell_threshold = current_buy_threshold - min_threshold_gap
+
         expected_ok = expected_return is None or expected_return[idx] >= min_expected_return
         risk_off = expected_return is not None and expected_return[idx] <= -min_expected_return
-        if probability >= buy_threshold and expected_ok:
+        if probability >= current_buy_threshold and expected_ok:
             signal[idx] = 1
-        elif probability <= sell_threshold or risk_off:
+        elif probability <= current_sell_threshold or risk_off:
             signal[idx] = -1
     return np.array(signal)
 
@@ -86,6 +111,11 @@ def run_daily_signal_backtest(
     min_expected_return=0.002,
     stop_loss=0.035,
     take_profit=0.07,
+    reference_probabilities=None,
+    buy_quantile=None,
+    sell_quantile=None,
+    min_threshold_gap=0.02,
+    adaptive_window=20,
 ):
     """日线回测：收盘后产生信号，下一交易日开盘成交，按 OHLC 近似风控。"""
     if market_data is not None:
@@ -99,6 +129,11 @@ def run_daily_signal_backtest(
         buy_threshold=buy_threshold,
         sell_threshold=sell_threshold,
         min_expected_return=min_expected_return,
+        reference_probabilities=reference_probabilities,
+        buy_quantile=buy_quantile,
+        sell_quantile=sell_quantile,
+        min_threshold_gap=min_threshold_gap,
+        adaptive_window=adaptive_window,
     )
     if pred_price is None:
         pred_price = np.full(len(real_price), np.nan)

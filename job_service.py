@@ -58,7 +58,7 @@ def parse_metrics_from_stdout(stdout_text):
         patterns = {
             "direction_accuracy": r"方向命中率: *([-\d\.]+)",
             "avg_up_probability": r"平均上涨概率: *([-\d\.]+)",
-            "positive_rate": r"模型看涨比例: *([-\d\.]+)",
+            "positive_rate": r"(?:信号触发比例|模型看涨比例): *([-\d\.]+)",
             "signal_hit_rate": r"交易信号命中率: *([-\d\.]+)",
             "total_return": r"日线策略总收益率: *([-\d\.]+)",
             "max_drawdown": r"最大回撤: *([-\d\.]+)",

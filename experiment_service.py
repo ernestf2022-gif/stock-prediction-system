@@ -1,5 +1,6 @@
 #实验服务：模型对比、特征消融、指标计算与结果导出。
 import os
+import random
 
 import numpy as np
 import pandas as pd
@@ -17,6 +18,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from config import (
     BATCH_SIZE,
     EPOCHS,
+    RANDOM_SEED,
     RESULT_DIR,
     TIME_STEP,
     ensure_directories,
@@ -34,6 +36,20 @@ TECHNICAL_INDICATORS = ["MA5", "MA10", "MACD", "RSI", "VOLATILITY"]
 MARKET_INDEX_FEATURES = ["大盘指数", "INDEX_RET"]
 RETURN_FEATURES = ["RET", "LOG_RET", "INDEX_RET"]
 PRICE_FEATURES = ["开盘价", "最高价", "最低价", "收盘价", "成交额(千元)"]
+
+
+def set_random_seed(seed=RANDOM_SEED):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    try:
+        torch.use_deterministic_algorithms(True, warn_only=True)
+    except TypeError:
+        torch.use_deterministic_algorithms(True)
 
 
 class VanillaLSTM(nn.Module):
@@ -266,6 +282,7 @@ def _predict_arima(pandas_df, forecast_len):
 
 
 def run_model_comparison(pandas_df, epochs=EXPERIMENT_EPOCHS, include_predictions=False):
+    set_random_seed()
     pandas_df = _normalize_experiment_dataframe(pandas_df)
     features = FEATURES
     (
@@ -315,15 +332,30 @@ def run_model_comparison(pandas_df, epochs=EXPERIMENT_EPOCHS, include_prediction
     return rows
 
 
+def _ablation_full_features_from_model_rows(model_rows):
+    for row in model_rows:
+        if row.get("模型") == "Vanilla LSTM":
+            return {
+                "模型": "Vanilla LSTM",
+                "实验名称": "Full Features",
+                "特征数量": len(FEATURES),
+                "RMSE": row["RMSE"],
+                "MAE": row["MAE"],
+                "MAPE": row["MAPE"],
+                "R²": row["R²"],
+            }
+    return None
+
+
 def _without(features_to_remove):
     remove_set = set(features_to_remove)
     return [feature for feature in FEATURES if feature not in remove_set]
 
 
-def run_ablation_experiment(pandas_df, epochs=EXPERIMENT_EPOCHS):
+def run_ablation_experiment(pandas_df, epochs=EXPERIMENT_EPOCHS, full_features_row=None):
+    set_random_seed()
     pandas_df = _normalize_experiment_dataframe(pandas_df)
     experiments = [
-        ("Full Features", FEATURES),
         ("No Technical Indicators", _without(TECHNICAL_INDICATORS)),
         ("No Market Index", _without(MARKET_INDEX_FEATURES)),
         ("No Return Features", _without(RETURN_FEATURES)),
@@ -331,6 +363,17 @@ def run_ablation_experiment(pandas_df, epochs=EXPERIMENT_EPOCHS):
     ]
 
     rows = []
+    if full_features_row is not None:
+        rows.append(full_features_row)
+    else:
+        train_loader, test_loader, _, _, X_test, real_price, _, scaler = _prepare_feature_experiment(
+            pandas_df, FEATURES
+        )
+        model = _train_lstm(VanillaLSTM, train_loader, test_loader, len(FEATURES), epochs)
+        pred_price = _predict_torch_model(model, X_test, scaler, FEATURES)
+        metrics = _price_metrics(real_price, pred_price)
+        rows.append({"模型": "Vanilla LSTM", "实验名称": "Full Features", "特征数量": len(FEATURES), **metrics})
+
     for experiment_name, features in experiments:
         train_loader, test_loader, _, _, X_test, real_price, _, scaler = _prepare_feature_experiment(
             pandas_df, features
@@ -338,7 +381,13 @@ def run_ablation_experiment(pandas_df, epochs=EXPERIMENT_EPOCHS):
         model = _train_lstm(VanillaLSTM, train_loader, test_loader, len(features), epochs)
         pred_price = _predict_torch_model(model, X_test, scaler, features)
         metrics = _price_metrics(real_price, pred_price)
-        rows.append({"实验名称": experiment_name, "特征数量": len(features), **metrics})
+        rows.append({"模型": "Vanilla LSTM", "实验名称": experiment_name, "特征数量": len(features), **metrics})
+
+        if experiment_name == "No Market Index":
+            dnn_model = _train_lstm(DNNRegressor, train_loader, test_loader, len(features), epochs)
+            dnn_pred_price = _predict_torch_model(dnn_model, X_test, scaler, features)
+            dnn_metrics = _price_metrics(real_price, dnn_pred_price)
+            rows.append({"模型": "DNN", "实验名称": experiment_name, "特征数量": len(features), **dnn_metrics})
 
     return rows
 
@@ -378,8 +427,11 @@ def run_experiments(stock_code, start_date, end_date, epochs=EXPERIMENT_EPOCHS, 
     pandas_df = _normalize_experiment_dataframe(lstm_df)
 
     model_rows_raw, model_prediction_curves = run_model_comparison(pandas_df, epochs=epochs, include_predictions=True)
+    full_features_row = _ablation_full_features_from_model_rows(model_rows_raw)
     model_rows = _format_rows(model_rows_raw)
-    ablation_rows = _format_rows(run_ablation_experiment(pandas_df, epochs=epochs))
+    ablation_rows = _format_rows(
+        run_ablation_experiment(pandas_df, epochs=epochs, full_features_row=full_features_row)
+    )
 
     model_csv_name, ablation_csv_name = _experiment_output_names(output_prefix)
     model_csv = _export_csv(model_rows, model_csv_name)
