@@ -5,7 +5,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 优先使用环境变量，未设置时沿用原脚本里的 token。
-TS_TOKEN = os.getenv("TS_TOKEN", "")
+TS_TOKEN = os.getenv("TS_TOKEN", "0eb6032fe437b724f0fa02c44d5ddb62814c3b81a195557fd1765dd8")
 STOCK_CODE = ""
 START_DATE = "20190101"
 END_DATE = "20260506"
