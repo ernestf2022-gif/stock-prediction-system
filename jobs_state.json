@@ -1003,38 +1003,6 @@
     "duration": 55.449421405792236,
     "finished_at": 1778655625.6157696
   },
-  "600276.SH_20260513150248": {
-    "job_type": "prediction",
-    "status": "finished",
-    "created_at": 1778655768.998522,
-    "images": [
-      "600276.SH_20260513150248_0.png",
-      "600276.SH_20260513150248_1.png"
-    ],
-    "stdout": "数据截止日期: 2026-05-06 00:00:00\n信号模型: BiLSTM-Attention Direction 涨跌概率\n实际买入阈值: 0.4982, 实际卖出阈值: 0.4782, 滚动阈值窗口: 10\n方向命中率: 0.4247\n平均上涨概率: 0.4982\n信号触发比例: 1.0000\n交易信号命中率: 0.4247\n买入信号次数: 332\n日线策略总收益率: -0.1721, 最大回撤: -0.3876, 年化夏普: -0.3725\n期末资产: 82787.75, 交易次数: 77, 胜率: 0.3421, 平均仓位: 0.8244, 累计交易成本: 9449.60\n",
-    "error": null,
-    "metrics": {
-      "direction_accuracy": 0.4247,
-      "avg_up_probability": 0.4982,
-      "positive_rate": 1.0,
-      "signal_hit_rate": 0.4247,
-      "total_return": -0.1721,
-      "max_drawdown": -0.3876,
-      "sharpe": -0.3725,
-      "final_capital": 82787.75,
-      "win_rate": 0.3421,
-      "exposure": 0.8244,
-      "fees_paid": 9449.6,
-      "signal_count": 332,
-      "trade_count": 77
-    },
-    "stock_code": "600276.SH",
-    "stock_name": "恒瑞医药",
-    "csv_name": "600276_SH_LSTM.csv",
-    "excel_name": "600276_SH_LSTM.xlsx",
-    "duration": 57.14276719093323,
-    "finished_at": 1778655826.148266
-  },
   "002463.SZ_20260513151744": {
     "job_type": "prediction",
     "status": "finished",
