@@ -875,70 +875,6 @@
     "epochs": 30,
     "finished_at": 1778578278.9665325
   },
-  "300750.SZ_20260513144755": {
-    "job_type": "prediction",
-    "status": "finished",
-    "created_at": 1778654875.4543169,
-    "images": [
-      "300750.SZ_20260513144755_0.png",
-      "300750.SZ_20260513144755_1.png"
-    ],
-    "stdout": "数据截止日期: 2026-05-06 00:00:00\n信号模型: BiLSTM-Attention Direction 涨跌概率\n实际买入阈值: 0.4993, 实际卖出阈值: 0.4793, 滚动阈值窗口: 10\n方向命中率: 0.4277\n平均上涨概率: 0.4993\n信号触发比例: 1.0000\n交易信号命中率: 0.4277\n买入信号次数: 332\n日线策略总收益率: 0.0504, 最大回撤: -0.2502, 年化夏普: 0.2725\n期末资产: 105042.27, 交易次数: 103, 胜率: 0.4118, 平均仓位: 0.6850, 累计交易成本: 9952.91\n",
-    "error": null,
-    "metrics": {
-      "direction_accuracy": 0.4277,
-      "avg_up_probability": 0.4993,
-      "positive_rate": 1.0,
-      "signal_hit_rate": 0.4277,
-      "total_return": 0.0504,
-      "max_drawdown": -0.2502,
-      "sharpe": 0.2725,
-      "final_capital": 105042.27,
-      "win_rate": 0.4118,
-      "exposure": 0.685,
-      "fees_paid": 9952.91,
-      "signal_count": 332,
-      "trade_count": 103
-    },
-    "stock_code": "300750.SZ",
-    "stock_name": "宁德时代",
-    "csv_name": "300750_SZ_LSTM.csv",
-    "excel_name": "300750_SZ_LSTM.xlsx",
-    "duration": 57.06729793548584,
-    "finished_at": 1778654932.5277345
-  },
-  "601127.SH_20260513145143": {
-    "job_type": "prediction",
-    "status": "finished",
-    "created_at": 1778655103.5895076,
-    "images": [
-      "601127.SH_20260513145143_0.png",
-      "601127.SH_20260513145143_1.png"
-    ],
-    "stdout": "数据截止日期: 2026-05-06 00:00:00\n信号模型: BiLSTM-Attention Direction 涨跌概率\n实际买入阈值: 0.5033, 实际卖出阈值: 0.4833, 滚动阈值窗口: 10\n方向命中率: 0.5873\n平均上涨概率: 0.5000\n信号触发比例: 1.0000\n交易信号命中率: 0.4127\n买入信号次数: 332\n日线策略总收益率: -0.4010, 最大回撤: -0.4693, 年化夏普: -1.2916\n期末资产: 59902.33, 交易次数: 110, 胜率: 0.2778, 平均仓位: 0.7410, 累计交易成本: 10643.99\n",
-    "error": null,
-    "metrics": {
-      "direction_accuracy": 0.5873,
-      "avg_up_probability": 0.5,
-      "positive_rate": 1.0,
-      "signal_hit_rate": 0.4127,
-      "total_return": -0.401,
-      "max_drawdown": -0.4693,
-      "sharpe": -1.2916,
-      "final_capital": 59902.33,
-      "win_rate": 0.2778,
-      "exposure": 0.741,
-      "fees_paid": 10643.99,
-      "signal_count": 332,
-      "trade_count": 110
-    },
-    "stock_code": "601127.SH",
-    "stock_name": "赛力斯",
-    "csv_name": "601127_SH_LSTM.csv",
-    "excel_name": "601127_SH_LSTM.xlsx",
-    "duration": 56.59648108482361,
-    "finished_at": 1778655160.1909719
-  },
   "601012.SH_20260513145304": {
     "job_type": "prediction",
     "status": "finished",
@@ -1067,38 +1003,6 @@
     "duration": 55.449421405792236,
     "finished_at": 1778655625.6157696
   },
-  "300760.SZ_20260513150056": {
-    "job_type": "prediction",
-    "status": "finished",
-    "created_at": 1778655656.4558575,
-    "images": [
-      "300760.SZ_20260513150056_0.png",
-      "300760.SZ_20260513150056_1.png"
-    ],
-    "stdout": "数据截止日期: 2026-05-06 00:00:00\n信号模型: BiLSTM-Attention Direction 涨跌概率\n实际买入阈值: 0.4981, 实际卖出阈值: 0.4781, 滚动阈值窗口: 10\n方向命中率: 0.3976\n平均上涨概率: 0.4981\n信号触发比例: 1.0000\n交易信号命中率: 0.3976\n买入信号次数: 332\n日线策略总收益率: -0.3100, 最大回撤: -0.3376, 年化夏普: -1.4351\n期末资产: 69000.86, 交易次数: 69, 胜率: 0.2353, 平均仓位: 0.6931, 累计交易成本: 5576.90\n",
-    "error": null,
-    "metrics": {
-      "direction_accuracy": 0.3976,
-      "avg_up_probability": 0.4981,
-      "positive_rate": 1.0,
-      "signal_hit_rate": 0.3976,
-      "total_return": -0.31,
-      "max_drawdown": -0.3376,
-      "sharpe": -1.4351,
-      "final_capital": 69000.86,
-      "win_rate": 0.2353,
-      "exposure": 0.6931,
-      "fees_paid": 5576.9,
-      "signal_count": 332,
-      "trade_count": 69
-    },
-    "stock_code": "300760.SZ",
-    "stock_name": "迈瑞医疗",
-    "csv_name": "300760_SZ_LSTM.csv",
-    "excel_name": "300760_SZ_LSTM.xlsx",
-    "duration": 59.786778926849365,
-    "finished_at": 1778655716.2486126
-  },
   "600276.SH_20260513150248": {
     "job_type": "prediction",
     "status": "finished",
@@ -1130,5 +1034,37 @@
     "excel_name": "600276_SH_LSTM.xlsx",
     "duration": 57.14276719093323,
     "finished_at": 1778655826.148266
+  },
+  "002463.SZ_20260513151744": {
+    "job_type": "prediction",
+    "status": "finished",
+    "created_at": 1778656664.1190348,
+    "images": [
+      "002463.SZ_20260513151744_0.png",
+      "002463.SZ_20260513151744_1.png"
+    ],
+    "stdout": "数据截止日期: 2026-05-06 00:00:00\n信号模型: BiLSTM-Attention Direction 涨跌概率\n实际买入阈值: 0.4959, 实际卖出阈值: 0.4759, 滚动阈值窗口: 10\n方向命中率: 0.4970\n平均上涨概率: 0.4949\n信号触发比例: 0.2982\n交易信号命中率: 0.5152\n买入信号次数: 99\n日线策略总收益率: 0.5904, 最大回撤: -0.1302, 年化夏普: 1.5029\n期末资产: 159042.75, 交易次数: 69, 胜率: 0.5294, 平均仓位: 0.2117, 累计交易成本: 10258.40\n",
+    "error": null,
+    "metrics": {
+      "direction_accuracy": 0.497,
+      "avg_up_probability": 0.4949,
+      "positive_rate": 0.2982,
+      "signal_hit_rate": 0.5152,
+      "total_return": 0.5904,
+      "max_drawdown": -0.1302,
+      "sharpe": 1.5029,
+      "final_capital": 159042.75,
+      "win_rate": 0.5294,
+      "exposure": 0.2117,
+      "fees_paid": 10258.4,
+      "signal_count": 99,
+      "trade_count": 69
+    },
+    "stock_code": "002463.SZ",
+    "stock_name": "沪电股份",
+    "csv_name": "002463_SZ_LSTM.csv",
+    "excel_name": "002463_SZ_LSTM.xlsx",
+    "duration": 58.23539066314697,
+    "finished_at": 1778656722.3623993
   }
 }
