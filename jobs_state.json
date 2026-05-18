@@ -905,7 +905,8 @@
     "csv_name": "601012_SH_LSTM.csv",
     "excel_name": "601012_SH_LSTM.xlsx",
     "duration": 63.814305782318115,
-    "finished_at": 1778655247.8675432
+    "finished_at": 1778655247.8675432,
+    "hidden": true
   },
   "300274.SZ_20260513145429": {
     "job_type": "prediction",
@@ -937,7 +938,8 @@
     "csv_name": "300274_SZ_LSTM.csv",
     "excel_name": "300274_SZ_LSTM.xlsx",
     "duration": 54.30450773239136,
-    "finished_at": 1778655323.9614823
+    "finished_at": 1778655323.9614823,
+    "hidden": true
   },
   "600900.SH_20260513145607": {
     "job_type": "prediction",
@@ -969,7 +971,8 @@
     "csv_name": "600900_SH_LSTM.csv",
     "excel_name": "600900_SH_LSTM.xlsx",
     "duration": 53.30268955230713,
-    "finished_at": 1778655421.0027785
+    "finished_at": 1778655421.0027785,
+    "hidden": true
   },
   "601899.SH_20260513145930": {
     "job_type": "prediction",
@@ -1001,7 +1004,8 @@
     "csv_name": "601899_SH_LSTM.csv",
     "excel_name": "601899_SH_LSTM.xlsx",
     "duration": 55.449421405792236,
-    "finished_at": 1778655625.6157696
+    "finished_at": 1778655625.6157696,
+    "hidden": true
   },
   "002463.SZ_20260513151744": {
     "job_type": "prediction",
@@ -1033,6 +1037,1071 @@
     "csv_name": "002463_SZ_LSTM.csv",
     "excel_name": "002463_SZ_LSTM.xlsx",
     "duration": 58.23539066314697,
-    "finished_at": 1778656722.3623993
+    "finished_at": 1778656722.3623993,
+    "hidden": true
+  },
+  "EXP_600604.SH_20260518144029": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1779086429.811884,
+    "stdout": "",
+    "error": null,
+    "stock_code": "600604.SH",
+    "stock_name": "市北高新",
+    "stock_label": "市北高新（600604.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 48.89924168586731,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 0.814742,
+        "MAE": 0.646799,
+        "MAPE": 11.407578,
+        "R²": -0.794094
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.320037,
+        "MAE": 0.238259,
+        "MAPE": 4.553653,
+        "R²": 0.723174
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.279083,
+        "MAE": 0.211214,
+        "MAPE": 3.971274,
+        "R²": 0.78949
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.217094,
+        "MAE": 0.170785,
+        "MAPE": 3.173277,
+        "R²": 0.87262
+      }
+    ],
+    "ablation_rows": [
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.217094,
+        "MAE": 0.170785,
+        "MAPE": 3.173277,
+        "R²": 0.87262
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.182502,
+        "MAE": 0.123877,
+        "MAPE": 2.283147,
+        "R²": 0.90998
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.165582,
+        "MAE": 0.111798,
+        "MAPE": 2.073162,
+        "R²": 0.925898
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.227112,
+        "MAE": 0.161588,
+        "MAPE": 2.982822,
+        "R²": 0.860592
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.236873,
+        "MAE": 0.164177,
+        "MAPE": 3.011489,
+        "R²": 0.848352
+      }
+    ],
+    "market_index_model_rows": [
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.165582,
+        "MAE": 0.111798,
+        "MAPE": 2.073162,
+        "R²": 0.925898
+      },
+      {
+        "模型": "ARIMA",
+        "实验名称": "No Market Index",
+        "特征数量": 1,
+        "RMSE": 0.814742,
+        "MAE": 0.646799,
+        "MAPE": 11.407578,
+        "R²": -0.794094
+      },
+      {
+        "模型": "DNN",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.632637,
+        "MAE": 0.587872,
+        "MAPE": 10.879485,
+        "R²": -0.081721
+      },
+      {
+        "模型": "CNN",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.506227,
+        "MAE": 0.453472,
+        "MAPE": 8.422813,
+        "R²": 0.307377
+      }
+    ],
+    "model_csv": "EXP_600604_SH_20260518144029_model_comparison.csv",
+    "ablation_csv": "EXP_600604_SH_20260518144029_ablation_result.csv",
+    "model_prediction_images": [
+      "EXP_600604_SH_20260518144029_ARIMA_price_prediction.png",
+      "EXP_600604_SH_20260518144029_DNN_price_prediction.png",
+      "EXP_600604_SH_20260518144029_CNN_price_prediction.png",
+      "EXP_600604_SH_20260518144029_Vanilla_LSTM_price_prediction.png"
+    ],
+    "result_files": [
+      "EXP_600604_SH_20260518144029_model_comparison.csv",
+      "EXP_600604_SH_20260518144029_ablation_result.csv",
+      "EXP_600604_SH_20260518144029_ARIMA_price_prediction.png",
+      "EXP_600604_SH_20260518144029_DNN_price_prediction.png",
+      "EXP_600604_SH_20260518144029_CNN_price_prediction.png",
+      "EXP_600604_SH_20260518144029_Vanilla_LSTM_price_prediction.png"
+    ],
+    "epochs": 30,
+    "sliding_window_rows": [
+      {
+        "滑动窗口": 10,
+        "RMSE": 0.170594,
+        "MAE": 0.115701,
+        "MAPE": 2.142414,
+        "R²": 0.919464
+      },
+      {
+        "滑动窗口": 20,
+        "RMSE": 0.2027,
+        "MAE": 0.14506,
+        "MAPE": 2.676925,
+        "R²": 0.888952
+      },
+      {
+        "滑动窗口": 30,
+        "RMSE": 0.205396,
+        "MAE": 0.160753,
+        "MAPE": 2.994976,
+        "R²": 0.88728
+      },
+      {
+        "滑动窗口": 60,
+        "RMSE": 0.219652,
+        "MAE": 0.175056,
+        "MAPE": 3.199152,
+        "R²": 0.86383
+      }
+    ],
+    "sliding_window_csv": "sliding_window_result.csv",
+    "finished_at": 1779086478.714126
+  },
+  "EXP_600015.SH_20260518144434": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1779086674.2005587,
+    "stdout": "",
+    "error": null,
+    "stock_code": "600015.SH",
+    "stock_name": "华夏银行",
+    "stock_label": "华夏银行（600015.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 47.441770792007446,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 0.574328,
+        "MAE": 0.466521,
+        "MAPE": 6.168955,
+        "R²": -0.263252
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.524246,
+        "MAE": 0.479752,
+        "MAPE": 6.414,
+        "R²": -0.052543
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.366054,
+        "MAE": 0.316603,
+        "MAPE": 4.239184,
+        "R²": 0.486831
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.128725,
+        "MAE": 0.093268,
+        "MAPE": 1.274961,
+        "R²": 0.93654
+      }
+    ],
+    "ablation_rows": [
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.128725,
+        "MAE": 0.093268,
+        "MAPE": 1.274961,
+        "R²": 0.93654
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.141032,
+        "MAE": 0.109228,
+        "MAPE": 1.466033,
+        "R²": 0.923826
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.127861,
+        "MAE": 0.091823,
+        "MAPE": 1.251179,
+        "R²": 0.93739
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.134742,
+        "MAE": 0.096632,
+        "MAPE": 1.3096,
+        "R²": 0.930469
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.153871,
+        "MAE": 0.108886,
+        "MAPE": 1.490774,
+        "R²": 0.909325
+      }
+    ],
+    "market_index_model_rows": [
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.127861,
+        "MAE": 0.091823,
+        "MAPE": 1.251179,
+        "R²": 0.93739
+      },
+      {
+        "模型": "ARIMA",
+        "实验名称": "No Market Index",
+        "特征数量": 1,
+        "RMSE": 0.574328,
+        "MAE": 0.466521,
+        "MAPE": 6.168955,
+        "R²": -0.263252
+      },
+      {
+        "模型": "DNN",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.270512,
+        "MAE": 0.216865,
+        "MAPE": 2.871233,
+        "R²": 0.719752
+      },
+      {
+        "模型": "CNN",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.378328,
+        "MAE": 0.317433,
+        "MAPE": 4.222458,
+        "R²": 0.451841
+      }
+    ],
+    "model_csv": "EXP_600015_SH_20260518144434_model_comparison.csv",
+    "ablation_csv": "EXP_600015_SH_20260518144434_ablation_result.csv",
+    "model_prediction_images": [
+      "EXP_600015_SH_20260518144434_ARIMA_price_prediction.png",
+      "EXP_600015_SH_20260518144434_DNN_price_prediction.png",
+      "EXP_600015_SH_20260518144434_CNN_price_prediction.png",
+      "EXP_600015_SH_20260518144434_Vanilla_LSTM_price_prediction.png"
+    ],
+    "result_files": [
+      "EXP_600015_SH_20260518144434_model_comparison.csv",
+      "EXP_600015_SH_20260518144434_ablation_result.csv",
+      "EXP_600015_SH_20260518144434_ARIMA_price_prediction.png",
+      "EXP_600015_SH_20260518144434_DNN_price_prediction.png",
+      "EXP_600015_SH_20260518144434_CNN_price_prediction.png",
+      "EXP_600015_SH_20260518144434_Vanilla_LSTM_price_prediction.png"
+    ],
+    "epochs": 30,
+    "sliding_window_rows": [
+      {
+        "滑动窗口": 10,
+        "RMSE": 0.132673,
+        "MAE": 0.096971,
+        "MAPE": 1.320076,
+        "R²": 0.931661
+      },
+      {
+        "滑动窗口": 20,
+        "RMSE": 0.277971,
+        "MAE": 0.254123,
+        "MAPE": 3.41765,
+        "R²": 0.704082
+      },
+      {
+        "滑动窗口": 30,
+        "RMSE": 0.154929,
+        "MAE": 0.123549,
+        "MAPE": 1.659274,
+        "R²": 0.907915
+      },
+      {
+        "滑动窗口": 60,
+        "RMSE": 0.172517,
+        "MAE": 0.135799,
+        "MAPE": 1.802399,
+        "R²": 0.893414
+      }
+    ],
+    "sliding_window_csv": "sliding_window_result.csv",
+    "finished_at": 1779086721.6453297
+  },
+  "EXP_601607.SH_20260518144716": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1779086836.2067747,
+    "stdout": "",
+    "error": null,
+    "stock_code": "601607.SH",
+    "stock_name": "上海医药",
+    "stock_label": "上海医药（601607.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 46.71258091926575,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 2.421721,
+        "MAE": 2.241164,
+        "MAPE": 12.484245,
+        "R²": -4.306072
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.248598,
+        "MAE": 0.187546,
+        "MAPE": 1.017586,
+        "R²": 0.944086
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.452509,
+        "MAE": 0.393184,
+        "MAPE": 2.160364,
+        "R²": 0.814741
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.250347,
+        "MAE": 0.203372,
+        "MAPE": 1.114756,
+        "R²": 0.943297
+      }
+    ],
+    "ablation_rows": [
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.250347,
+        "MAE": 0.203372,
+        "MAPE": 1.114756,
+        "R²": 0.943297
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.240345,
+        "MAE": 0.19166,
+        "MAPE": 1.051751,
+        "R²": 0.947737
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.190807,
+        "MAE": 0.137867,
+        "MAPE": 0.74559,
+        "R²": 0.967061
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.240207,
+        "MAE": 0.190569,
+        "MAPE": 1.039711,
+        "R²": 0.947797
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.205151,
+        "MAE": 0.14413,
+        "MAPE": 0.782177,
+        "R²": 0.961922
+      }
+    ],
+    "market_index_model_rows": [
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.190807,
+        "MAE": 0.137867,
+        "MAPE": 0.74559,
+        "R²": 0.967061
+      },
+      {
+        "模型": "ARIMA",
+        "实验名称": "No Market Index",
+        "特征数量": 1,
+        "RMSE": 2.421721,
+        "MAE": 2.241164,
+        "MAPE": 12.484245,
+        "R²": -4.306072
+      },
+      {
+        "模型": "DNN",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.249168,
+        "MAE": 0.189944,
+        "MAPE": 1.022479,
+        "R²": 0.943829
+      },
+      {
+        "模型": "CNN",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.348368,
+        "MAE": 0.283481,
+        "MAPE": 1.550571,
+        "R²": 0.8902
+      }
+    ],
+    "model_csv": "EXP_601607_SH_20260518144716_model_comparison.csv",
+    "ablation_csv": "EXP_601607_SH_20260518144716_ablation_result.csv",
+    "model_prediction_images": [
+      "EXP_601607_SH_20260518144716_ARIMA_price_prediction.png",
+      "EXP_601607_SH_20260518144716_DNN_price_prediction.png",
+      "EXP_601607_SH_20260518144716_CNN_price_prediction.png",
+      "EXP_601607_SH_20260518144716_Vanilla_LSTM_price_prediction.png"
+    ],
+    "result_files": [
+      "EXP_601607_SH_20260518144716_model_comparison.csv",
+      "EXP_601607_SH_20260518144716_ablation_result.csv",
+      "EXP_601607_SH_20260518144716_ARIMA_price_prediction.png",
+      "EXP_601607_SH_20260518144716_DNN_price_prediction.png",
+      "EXP_601607_SH_20260518144716_CNN_price_prediction.png",
+      "EXP_601607_SH_20260518144716_Vanilla_LSTM_price_prediction.png"
+    ],
+    "epochs": 30,
+    "sliding_window_rows": [
+      {
+        "滑动窗口": 10,
+        "RMSE": 0.234527,
+        "MAE": 0.18619,
+        "MAPE": 1.012213,
+        "R²": 0.959523
+      },
+      {
+        "滑动窗口": 20,
+        "RMSE": 0.330535,
+        "MAE": 0.27798,
+        "MAPE": 1.537498,
+        "R²": 0.901154
+      },
+      {
+        "滑动窗口": 30,
+        "RMSE": 0.221235,
+        "MAE": 0.16987,
+        "MAPE": 0.922549,
+        "R²": 0.941506
+      },
+      {
+        "滑动窗口": 60,
+        "RMSE": 0.190696,
+        "MAE": 0.14092,
+        "MAPE": 0.774884,
+        "R²": 0.932623
+      }
+    ],
+    "sliding_window_csv": "sliding_window_result.csv",
+    "finished_at": 1779086882.9223561
+  },
+  "EXP_600511.SH_20260518145024": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1779087024.7679105,
+    "stdout": "",
+    "error": null,
+    "stock_code": "600511.SH",
+    "stock_name": "国药股份",
+    "stock_label": "国药股份（600511.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 47.6631281375885,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 4.564779,
+        "MAE": 4.41705,
+        "MAPE": 14.95232,
+        "R²": -12.942801
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.68129,
+        "MAE": 0.586523,
+        "MAPE": 1.958869,
+        "R²": 0.689419
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.657564,
+        "MAE": 0.542856,
+        "MAPE": 1.825934,
+        "R²": 0.710675
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.446521,
+        "MAE": 0.357448,
+        "MAPE": 1.195481,
+        "R²": 0.866588
+      }
+    ],
+    "ablation_rows": [
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.446521,
+        "MAE": 0.357448,
+        "MAPE": 1.195481,
+        "R²": 0.866588
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.750525,
+        "MAE": 0.667828,
+        "MAPE": 2.244945,
+        "R²": 0.623088
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.373039,
+        "MAE": 0.276276,
+        "MAPE": 0.920404,
+        "R²": 0.906885
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.443526,
+        "MAE": 0.345485,
+        "MAPE": 1.151937,
+        "R²": 0.868372
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.441141,
+        "MAE": 0.320875,
+        "MAPE": 1.068533,
+        "R²": 0.869784
+      }
+    ],
+    "market_index_model_rows": [
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.373039,
+        "MAE": 0.276276,
+        "MAPE": 0.920404,
+        "R²": 0.906885
+      },
+      {
+        "模型": "ARIMA",
+        "实验名称": "No Market Index",
+        "特征数量": 1,
+        "RMSE": 4.564779,
+        "MAE": 4.41705,
+        "MAPE": 14.95232,
+        "R²": -12.942801
+      },
+      {
+        "模型": "DNN",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.958593,
+        "MAE": 0.793102,
+        "MAPE": 2.620674,
+        "R²": 0.385136
+      },
+      {
+        "模型": "CNN",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.799982,
+        "MAE": 0.660392,
+        "MAPE": 2.213637,
+        "R²": 0.571776
+      }
+    ],
+    "model_csv": "EXP_600511_SH_20260518145024_model_comparison.csv",
+    "ablation_csv": "EXP_600511_SH_20260518145024_ablation_result.csv",
+    "model_prediction_images": [
+      "EXP_600511_SH_20260518145024_ARIMA_price_prediction.png",
+      "EXP_600511_SH_20260518145024_DNN_price_prediction.png",
+      "EXP_600511_SH_20260518145024_CNN_price_prediction.png",
+      "EXP_600511_SH_20260518145024_Vanilla_LSTM_price_prediction.png"
+    ],
+    "result_files": [
+      "EXP_600511_SH_20260518145024_model_comparison.csv",
+      "EXP_600511_SH_20260518145024_ablation_result.csv",
+      "EXP_600511_SH_20260518145024_ARIMA_price_prediction.png",
+      "EXP_600511_SH_20260518145024_DNN_price_prediction.png",
+      "EXP_600511_SH_20260518145024_CNN_price_prediction.png",
+      "EXP_600511_SH_20260518145024_Vanilla_LSTM_price_prediction.png"
+    ],
+    "epochs": 30,
+    "sliding_window_rows": [
+      {
+        "滑动窗口": 10,
+        "RMSE": 1.021594,
+        "MAE": 0.912718,
+        "MAPE": 3.072963,
+        "R²": 0.500312
+      },
+      {
+        "滑动窗口": 20,
+        "RMSE": 0.379637,
+        "MAE": 0.292276,
+        "MAPE": 0.974991,
+        "R²": 0.903562
+      },
+      {
+        "滑动窗口": 30,
+        "RMSE": 0.620575,
+        "MAE": 0.534852,
+        "MAPE": 1.803124,
+        "R²": 0.559373
+      },
+      {
+        "滑动窗口": 60,
+        "RMSE": 0.50676,
+        "MAE": 0.429502,
+        "MAPE": 1.456962,
+        "R²": 0.320512
+      }
+    ],
+    "sliding_window_csv": "sliding_window_result.csv",
+    "finished_at": 1779087072.435039
+  },
+  "EXP_600604.SH_20260518203032": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1779107432.4272995,
+    "stdout": "",
+    "error": null,
+    "stock_code": "600604.SH",
+    "stock_name": "市北高新",
+    "stock_label": "市北高新（600604.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 51.32289528846741,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 0.814742,
+        "MAE": 0.646799,
+        "MAPE": 11.407578,
+        "R²": -0.794094
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.320037,
+        "MAE": 0.238259,
+        "MAPE": 4.553653,
+        "R²": 0.723174
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.279083,
+        "MAE": 0.211214,
+        "MAPE": 3.971274,
+        "R²": 0.78949
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.217094,
+        "MAE": 0.170785,
+        "MAPE": 3.173277,
+        "R²": 0.87262
+      }
+    ],
+    "ablation_rows": [
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.217094,
+        "MAE": 0.170785,
+        "MAPE": 3.173277,
+        "R²": 0.87262
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.182502,
+        "MAE": 0.123877,
+        "MAPE": 2.283147,
+        "R²": 0.90998
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.165582,
+        "MAE": 0.111798,
+        "MAPE": 2.073162,
+        "R²": 0.925898
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.227112,
+        "MAE": 0.161588,
+        "MAPE": 2.982822,
+        "R²": 0.860592
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.236873,
+        "MAE": 0.164177,
+        "MAPE": 3.011489,
+        "R²": 0.848352
+      }
+    ],
+    "market_index_model_rows": [
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.165582,
+        "MAE": 0.111798,
+        "MAPE": 2.073162,
+        "R²": 0.925898
+      },
+      {
+        "模型": "ARIMA",
+        "实验名称": "No Market Index",
+        "特征数量": 1,
+        "RMSE": 0.814742,
+        "MAE": 0.646799,
+        "MAPE": 11.407578,
+        "R²": -0.794094
+      },
+      {
+        "模型": "DNN",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.632637,
+        "MAE": 0.587872,
+        "MAPE": 10.879485,
+        "R²": -0.081721
+      },
+      {
+        "模型": "CNN",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.506227,
+        "MAE": 0.453472,
+        "MAPE": 8.422813,
+        "R²": 0.307377
+      }
+    ],
+    "sliding_window_rows": [
+      {
+        "滑动窗口": 10,
+        "RMSE": 0.170594,
+        "MAE": 0.115701,
+        "MAPE": 2.142414,
+        "R²": 0.919464
+      },
+      {
+        "滑动窗口": 20,
+        "RMSE": 0.2027,
+        "MAE": 0.14506,
+        "MAPE": 2.676925,
+        "R²": 0.888952
+      },
+      {
+        "滑动窗口": 30,
+        "RMSE": 0.205396,
+        "MAE": 0.160753,
+        "MAPE": 2.994976,
+        "R²": 0.88728
+      },
+      {
+        "滑动窗口": 60,
+        "RMSE": 0.219652,
+        "MAE": 0.175056,
+        "MAPE": 3.199152,
+        "R²": 0.86383
+      }
+    ],
+    "model_csv": "EXP_600604_SH_20260518203032_model_comparison.csv",
+    "ablation_csv": "EXP_600604_SH_20260518203032_ablation_result.csv",
+    "sliding_window_csv": "sliding_window_result.csv",
+    "model_prediction_images": [
+      "EXP_600604_SH_20260518203032_ARIMA_price_prediction.png",
+      "EXP_600604_SH_20260518203032_DNN_price_prediction.png",
+      "EXP_600604_SH_20260518203032_CNN_price_prediction.png",
+      "EXP_600604_SH_20260518203032_Vanilla_LSTM_price_prediction.png"
+    ],
+    "result_files": [
+      "EXP_600604_SH_20260518203032_model_comparison.csv",
+      "EXP_600604_SH_20260518203032_ablation_result.csv",
+      "sliding_window_result.csv",
+      "EXP_600604_SH_20260518203032_ARIMA_price_prediction.png",
+      "EXP_600604_SH_20260518203032_DNN_price_prediction.png",
+      "EXP_600604_SH_20260518203032_CNN_price_prediction.png",
+      "EXP_600604_SH_20260518203032_Vanilla_LSTM_price_prediction.png"
+    ],
+    "epochs": 30,
+    "finished_at": 1779107483.754194
+  },
+  "EXP_600015.SH_20260518203211": {
+    "job_type": "experiment",
+    "status": "finished",
+    "created_at": 1779107531.4385593,
+    "stdout": "",
+    "error": null,
+    "stock_code": "600015.SH",
+    "stock_name": "华夏银行",
+    "stock_label": "华夏银行（600015.SH）",
+    "start_date": "20190101",
+    "end_date": "20260506",
+    "duration": 48.7486629486084,
+    "model_rows": [
+      {
+        "模型": "ARIMA",
+        "RMSE": 0.574328,
+        "MAE": 0.466521,
+        "MAPE": 6.168955,
+        "R²": -0.263252
+      },
+      {
+        "模型": "DNN",
+        "RMSE": 0.524246,
+        "MAE": 0.479752,
+        "MAPE": 6.414,
+        "R²": -0.052543
+      },
+      {
+        "模型": "CNN",
+        "RMSE": 0.366054,
+        "MAE": 0.316603,
+        "MAPE": 4.239184,
+        "R²": 0.486831
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "RMSE": 0.128725,
+        "MAE": 0.093268,
+        "MAPE": 1.274961,
+        "R²": 0.93654
+      }
+    ],
+    "ablation_rows": [
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "Full Features",
+        "特征数量": 14,
+        "RMSE": 0.128725,
+        "MAE": 0.093268,
+        "MAPE": 1.274961,
+        "R²": 0.93654
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Technical Indicators",
+        "特征数量": 9,
+        "RMSE": 0.141032,
+        "MAE": 0.109228,
+        "MAPE": 1.466033,
+        "R²": 0.923826
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.127861,
+        "MAE": 0.091823,
+        "MAPE": 1.251179,
+        "R²": 0.93739
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Return Features",
+        "特征数量": 11,
+        "RMSE": 0.134742,
+        "MAE": 0.096632,
+        "MAPE": 1.3096,
+        "R²": 0.930469
+      },
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "Only Price Features",
+        "特征数量": 5,
+        "RMSE": 0.153871,
+        "MAE": 0.108886,
+        "MAPE": 1.490774,
+        "R²": 0.909325
+      }
+    ],
+    "market_index_model_rows": [
+      {
+        "模型": "Vanilla LSTM",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.127861,
+        "MAE": 0.091823,
+        "MAPE": 1.251179,
+        "R²": 0.93739
+      },
+      {
+        "模型": "ARIMA",
+        "实验名称": "No Market Index",
+        "特征数量": 1,
+        "RMSE": 0.574328,
+        "MAE": 0.466521,
+        "MAPE": 6.168955,
+        "R²": -0.263252
+      },
+      {
+        "模型": "DNN",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.270512,
+        "MAE": 0.216865,
+        "MAPE": 2.871233,
+        "R²": 0.719752
+      },
+      {
+        "模型": "CNN",
+        "实验名称": "No Market Index",
+        "特征数量": 12,
+        "RMSE": 0.378328,
+        "MAE": 0.317433,
+        "MAPE": 4.222458,
+        "R²": 0.451841
+      }
+    ],
+    "sliding_window_rows": [
+      {
+        "滑动窗口": 10,
+        "RMSE": 0.132673,
+        "MAE": 0.096971,
+        "MAPE": 1.320076,
+        "R²": 0.931661
+      },
+      {
+        "滑动窗口": 20,
+        "RMSE": 0.277971,
+        "MAE": 0.254123,
+        "MAPE": 3.41765,
+        "R²": 0.704082
+      },
+      {
+        "滑动窗口": 30,
+        "RMSE": 0.154929,
+        "MAE": 0.123549,
+        "MAPE": 1.659274,
+        "R²": 0.907915
+      },
+      {
+        "滑动窗口": 60,
+        "RMSE": 0.172517,
+        "MAE": 0.135799,
+        "MAPE": 1.802399,
+        "R²": 0.893414
+      }
+    ],
+    "model_csv": "EXP_600015_SH_20260518203211_model_comparison.csv",
+    "ablation_csv": "EXP_600015_SH_20260518203211_ablation_result.csv",
+    "sliding_window_csv": "sliding_window_result.csv",
+    "model_prediction_images": [
+      "EXP_600015_SH_20260518203211_ARIMA_price_prediction.png",
+      "EXP_600015_SH_20260518203211_DNN_price_prediction.png",
+      "EXP_600015_SH_20260518203211_CNN_price_prediction.png",
+      "EXP_600015_SH_20260518203211_Vanilla_LSTM_price_prediction.png"
+    ],
+    "result_files": [
+      "EXP_600015_SH_20260518203211_model_comparison.csv",
+      "EXP_600015_SH_20260518203211_ablation_result.csv",
+      "sliding_window_result.csv",
+      "EXP_600015_SH_20260518203211_ARIMA_price_prediction.png",
+      "EXP_600015_SH_20260518203211_DNN_price_prediction.png",
+      "EXP_600015_SH_20260518203211_CNN_price_prediction.png",
+      "EXP_600015_SH_20260518203211_Vanilla_LSTM_price_prediction.png"
+    ],
+    "epochs": 30,
+    "finished_at": 1779107580.1922185
   }
 }

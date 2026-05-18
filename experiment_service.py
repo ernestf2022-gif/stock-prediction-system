@@ -31,6 +31,7 @@ from plot_service import plot_price_prediction, setup_matplotlib
 EXPERIMENT_EPOCHS = min(EPOCHS, 30)
 MODEL_COMPARISON_CSV = "model_comparison.csv"
 ABLATION_RESULT_CSV = "ablation_result.csv"
+SLIDING_WINDOW_RESULT_CSV = "sliding_window_result.csv"
 NO_MARKET_INDEX_ABLATION_NAME = "No Market Index"
 NO_MARKET_INDEX_ABLATION_MODELS = ("Vanilla LSTM", "ARIMA", "DNN", "CNN")
 
@@ -114,11 +115,11 @@ def _validate_features(features):
         raise ValueError("实验特征必须包含收盘价")
 
 
-def _scale_train_test_data(pandas_df, features):
+def _scale_train_test_data(pandas_df, features, time_step=TIME_STEP):
     _validate_features(features)
     data = pandas_df[features]
     train_size = int(len(data) * 0.8)
-    if train_size <= TIME_STEP + 1 or len(data) - train_size <= TIME_STEP + 1:
+    if train_size <= time_step + 1 or len(data) - train_size <= time_step + 1:
         raise ValueError("数据量不足，无法完成训练/测试划分，请扩大日期范围。")
 
     train_raw = data.iloc[:train_size]
@@ -244,10 +245,10 @@ def _save_model_prediction_plots(prediction_curves, stock_label, output_prefix=N
     return images
 
 
-def _prepare_feature_experiment(pandas_df, features):
-    train_df, test_df, scaler = _scale_train_test_data(pandas_df, features)
-    X_train, y_train, _ = _create_regression_dataset(train_df, features)
-    X_test, y_test, prev_test = _create_regression_dataset(test_df, features)
+def _prepare_feature_experiment(pandas_df, features, time_step=TIME_STEP):
+    train_df, test_df, scaler = _scale_train_test_data(pandas_df, features, time_step=time_step)
+    X_train, y_train, _ = _create_regression_dataset(train_df, features, time_step=time_step)
+    X_test, y_test, prev_test = _create_regression_dataset(test_df, features, time_step=time_step)
 
     real_price = _inverse_close(y_test, scaler, features)
     prev_price = _inverse_close(prev_test, scaler, features)
@@ -403,6 +404,23 @@ def run_ablation_experiment(pandas_df, epochs=EXPERIMENT_EPOCHS, full_features_r
     return rows
 
 
+def run_window_experiment(pandas_df, windows=(10, 20, 30, 60), epochs=EXPERIMENT_EPOCHS):
+    set_random_seed()
+    pandas_df = _normalize_experiment_dataframe(pandas_df)
+    rows = []
+
+    for window in windows:
+        train_loader, test_loader, _, _, X_test, real_price, _, scaler = _prepare_feature_experiment(
+            pandas_df, FEATURES, time_step=window
+        )
+        model = _train_lstm(VanillaLSTM, train_loader, test_loader, len(FEATURES), epochs)
+        pred_price = _predict_torch_model(model, X_test, scaler, FEATURES)
+        metrics = _price_metrics(real_price, pred_price)
+        rows.append({"滑动窗口": window, **metrics})
+
+    return rows
+
+
 def _format_rows(rows):
     formatted_rows = []
     for row in rows:
@@ -473,10 +491,12 @@ def run_experiments(stock_code, start_date, end_date, epochs=EXPERIMENT_EPOCHS, 
         run_ablation_experiment(pandas_df, epochs=epochs, full_features_row=full_features_row)
     )
     ablation_rows, market_index_model_rows = split_ablation_rows_for_display(all_ablation_rows)
+    sliding_window_rows = _format_rows(run_window_experiment(pandas_df, epochs=epochs))
 
     model_csv_name, ablation_csv_name = _experiment_output_names(output_prefix)
     model_csv = _export_csv(model_rows, model_csv_name)
     ablation_csv = _export_csv(all_ablation_rows, ablation_csv_name)
+    sliding_window_csv = _export_csv(sliding_window_rows, SLIDING_WINDOW_RESULT_CSV)
     model_prediction_images = _save_model_prediction_plots(
         model_prediction_curves,
         stock_label,
@@ -492,7 +512,9 @@ def run_experiments(stock_code, start_date, end_date, epochs=EXPERIMENT_EPOCHS, 
         "model_rows": model_rows,
         "ablation_rows": ablation_rows,
         "market_index_model_rows": market_index_model_rows,
+        "sliding_window_rows": sliding_window_rows,
         "model_csv": model_csv,
         "ablation_csv": ablation_csv,
+        "sliding_window_csv": sliding_window_csv,
         "model_prediction_images": model_prediction_images,
     }

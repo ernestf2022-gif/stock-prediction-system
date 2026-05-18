@@ -1,18 +1,4 @@
-# =====================================================
-# 基于机器学习的股票交易数据分析与预测系统
-# =====================================================
-# 系统功能：
-# 1. 股票数据获取
-# 2. 数据清洗与特征工程
-# 3. 模型训练
-# 4. 股票涨跌预测
-# 5. 量化回测分析
-# 6. Web可视化展示
-# 系统目前已经能够完成：
-# 从股票数据获取到预测结果展示的完整流程
-# =====================================================
-
-#系统入口，Flask Web 服务，负责路由、页面跳转、接口调用。
+# Stock price prediction experiment web service.
 import os
 
 from flask import Flask, abort, jsonify, redirect, render_template, request, send_from_directory, url_for
@@ -21,10 +7,8 @@ from config import APP_VERSION, CSV_DIR, END_DATE, EXCEL_DIR, RESULT_DIR, START_
 from job_service import (
     clear_all_jobs_and_files,
     create_experiment_job,
-    create_job,
     delete_job,
     get_experiment_page_context,
-    get_job_page_context,
     get_job_status,
     get_latest_finished_summary,
     list_recent_jobs,
@@ -53,37 +37,19 @@ def read_stock_params():
 
 @app.route("/", methods=["GET"])
 def index():
-    (
-        latest_metrics,
-        latest_duration,
-        latest_images,
-        latest_stock_label,
-        latest_images_stock_label,
-    ) = get_latest_finished_summary()
+    latest_model_rows, latest_duration, latest_images, latest_stock_label = get_latest_finished_summary()
     return render_template(
         "index.html",
         default_code=STOCK_CODE,
         default_start=START_DATE,
         default_end=END_DATE,
         jobs=list_recent_jobs(limit=50),
-        latest_metrics=latest_metrics,
+        latest_model_rows=latest_model_rows,
         latest_duration=latest_duration,
         latest_images=latest_images,
         latest_stock_label=latest_stock_label,
-        latest_images_stock_label=latest_images_stock_label,
         app_version=APP_VERSION,
     )
-
-
-@app.route("/run", methods=["POST"])
-def run_route():
-    stock_code, start_date, end_date = read_stock_params()
-
-    if not stock_code or not start_date or not end_date:
-        return "参数不完整", 400
-
-    jobid = create_job(stock_code, start_date, end_date)
-    return redirect(url_for("job_page", jobid=jobid))
 
 
 @app.route("/experiment", methods=["POST"])
@@ -102,14 +68,6 @@ def experiment_page(jobid):
     if context is None:
         abort(404)
     return render_template("experiment.html", **context, app_version=APP_VERSION)
-
-
-@app.route("/job/<jobid>", methods=["GET"])
-def job_page(jobid):
-    context = get_job_page_context(jobid)
-    if context is None:
-        abort(404)
-    return render_template("job.html", **context, app_version=APP_VERSION)
 
 
 @app.route("/status/<jobid>", methods=["GET"])
@@ -158,5 +116,5 @@ def delete_job_route(jobid):
 
 
 if __name__ == "__main__":
-    print("启动 Flask 服务： http://127.0.0.1:5000")
+    print("启动 Flask 服务：http://127.0.0.1:5000")
     app.run(debug=False, host="127.0.0.1", port=5000, use_reloader=False)
